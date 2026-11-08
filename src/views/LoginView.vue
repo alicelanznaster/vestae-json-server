@@ -1,4 +1,3 @@
-```vue
 <script setup>
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
@@ -8,15 +7,19 @@ import { carregarCarrinho } from '@/utils/cartUtils'
 let email = ref('')
 let senha = ref('')
 let mostrarSenha = ref(false)
-const router = useRouter()
 
-function entrar() {
+const router = useRouter()
+const API_URL = 'http://localhost:3000'
+
+async function entrar() {
   if (email.value === '' || senha.value === '') {
     alert('Preencha todos os campos!')
     return
   }
 
-  const usuarios = JSON.parse(localStorage.getItem('usuarios') ?? '[]')
+  const resposta = await fetch(`${API_URL}/usuarios`)
+  const usuarios = await resposta.json()
+
   const usuario = usuarios.find(
     (usuario) => usuario.email === email.value.toLowerCase() && usuario.senha === senha.value,
   )
@@ -57,7 +60,6 @@ function entrar() {
   }
 }
 </script>
-```
 
 <template>
   <main class="pagina">

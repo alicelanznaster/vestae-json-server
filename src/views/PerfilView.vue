@@ -2,6 +2,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
+import todosProdutos from '@/data/product'
+import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const router = useRouter()
 const usuario = ref(null)
@@ -10,6 +12,10 @@ const inputFile = ref(null)
 const produtos = ref([])
 const editandoNome = ref(false)
 const novoNome = ref('')
+
+const modoAtivo = ref('comprador')
+const produtosFavoritos = ref([])
+const API_URL = 'http://localhost:3000'
 
 // pega o usuário que ta logado
 function carregarUsuario() {
@@ -27,6 +33,47 @@ function sair() {
   router.push('/login')
 }
 
+async function excluirConta() {
+  const confirmar = confirm(
+    'Tem certeza que deseja excluir sua conta? Essa ação não poderá ser desfeita.',
+  )
+
+  if (!confirmar) {
+    return
+  }
+
+  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`, {
+    method: 'DELETE',
+  })
+
+  if (!resposta.ok) {
+    alert('Erro ao excluir a conta!')
+    return
+  }
+
+  const email = usuario.value.email
+
+  // remove os favoritos dessa conta
+  const favoritos = JSON.parse(localStorage.getItem('favoritos') || '{}')
+  delete favoritos[email]
+  localStorage.setItem('favoritos', JSON.stringify(favoritos))
+
+  // remove os anúncios dessa conta
+  const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
+  const anunciosAtualizados = anuncios.filter((produto) => produto.email !== email)
+  localStorage.setItem('vestae-anuncios', JSON.stringify(anunciosAtualizados))
+
+  // remove os outros dados locais
+  localStorage.removeItem('carrinho')
+  localStorage.removeItem(`vestae-foto-${email}`)
+  localStorage.removeItem('usuarioLogado')
+  localStorage.removeItem('produtoParaFavoritar')
+  localStorage.removeItem('voltarDepoisDoLogin')
+
+  alert('Sua conta foi excluída com sucesso!')
+  router.push('/')
+}
+
 function editarNome() {
   novoNome.value = usuario.value?.nome || ''
   editandoNome.value = true
@@ -36,7 +83,7 @@ function cancelarEdicaoNome() {
   editandoNome.value = false
 }
 
-function salvarNome() {
+async function salvarNome() {
   const nome = novoNome.value.trim()
 
   if (!nome) {
@@ -44,31 +91,67 @@ function salvarNome() {
     return
   }
 
-  usuario.value.nome = nome
+  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nome: nome }),
+  })
 
-  localStorage.setItem(
-    'usuarioLogado',
-    JSON.stringify(usuario.value)
-  )
-
-  const usuarios = JSON.parse(
-    localStorage.getItem('usuarios') || '[]'
-  )
-
-  const indice = usuarios.findIndex(
-    (usuarioSalvo) => usuarioSalvo.email === usuario.value.email
-  )
-
-  if (indice !== -1) {
-    usuarios[indice].nome = nome
-
-    localStorage.setItem(
-      'usuarios',
-      JSON.stringify(usuarios)
-    )
+  if (!resposta.ok) {
+    alert('Erro ao atualizar o nome!')
+    return
   }
 
+  const usuarioAtualizado = await resposta.json()
+
+  usuario.value = usuarioAtualizado
+
+  localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
+
   editandoNome.value = false
+}
+
+// pega o modo ativo do usuário no JSON Server
+async function carregarModo() {
+  if (!usuario.value) return
+
+  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`)
+
+  if (resposta.ok) {
+    const usuarioAtualizado = await resposta.json()
+
+    modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
+    usuario.value = usuarioAtualizado
+
+    localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
+  }
+}
+
+// troca o modo ativo do usuário
+async function trocarModo(modo) {
+  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      modoAtivo: modo,
+    }),
+  })
+
+  if (!resposta.ok) {
+    alert('Erro ao trocar o modo!')
+    return
+  }
+
+  const usuarioAtualizado = await resposta.json()
+
+  usuario.value = usuarioAtualizado
+  modoAtivo.value = usuarioAtualizado.modoAtivo
+
+  localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
 }
 
 // pega os produtos salvos no localStorage
@@ -80,8 +163,21 @@ function carregarProdutos() {
     return
   }
 
-  produtos.value = anunciosSalvos.filter(
-    (produto) => produto.email === usuario.value.email
+  produtos.value = anunciosSalvos.filter((produto) => produto.email === usuario.value.email)
+}
+
+// carrega os produtos favoritos do usuário
+function carregarFavoritosPerfil() {
+  if (!usuario.value) {
+    produtosFavoritos.value = []
+    return
+  }
+
+  const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
+  const favoritosUsuario = favoritos[usuario.value.email] || []
+
+  produtosFavoritos.value = todosProdutos.value.filter((produto) =>
+    favoritosUsuario.includes(produto.id),
   )
 }
 
@@ -121,7 +217,10 @@ function selecionarFoto(evento) {
 // carrega os dados do perfil quando a página abre
 onMounted(() => {
   carregarUsuario()
+  carregarModo()
   carregarProdutos()
+  carregarFavoritosPerfil()
+  carregarFavoritos()
   carregarFoto()
 })
 </script>
@@ -140,7 +239,13 @@ onMounted(() => {
           <img v-else src="/icons/user-circle.svg" alt="Usuário" class="icone-usuario" />
         </button>
 
-        <input type="file" ref="inputFile" @change="selecionarFoto" accept="image/png, image/jpeg, image/webp" class="input-oculto" />
+        <input
+          type="file"
+          ref="inputFile"
+          @change="selecionarFoto"
+          accept="image/png, image/jpeg, image/webp"
+          class="input-oculto"
+        />
 
         <div class="info">
           <div v-if="!editandoNome" class="nome-perfil">
@@ -152,9 +257,7 @@ onMounted(() => {
             <input v-model="novoNome" type="text" maxlength="50" @keyup.enter="salvarNome" />
 
             <div class="botoes-edicao">
-              <button type="button" @click="salvarNome">
-                Salvar
-              </button>
+              <button type="button" @click="salvarNome">Salvar</button>
 
               <button type="button" class="botao-cancelar" @click="cancelarEdicaoNome">
                 Cancelar
@@ -171,11 +274,35 @@ onMounted(() => {
         <button class="botao-sair" type="button" @click="sair">
           <img src="/icons/exit.svg" alt="Sair" class="sair" />
         </button>
-      </section>
 
+        <button class="botao-excluir" type="button" @click="excluirConta">
+          <img src="/public/icons/lixeira-rosa.svg" alt="excluir" class="excluir" />
+        </button>
+      </section>
+      <section class="alternancia-modo">
+        <p>Como deseja utilizar o Vestæ?</p>
+
+        <div class="barra-modos">
+          <button
+            type="button"
+            :class="{ ativo: modoAtivo === 'comprador' }"
+            @click="trocarModo('comprador')"
+          >
+            Comprar
+          </button>
+
+          <button
+            type="button"
+            :class="{ ativo: modoAtivo === 'vendedor' }"
+            @click="trocarModo('vendedor')"
+          >
+            Vender
+          </button>
+        </div>
+      </section>
       <hr class="divisoria" />
 
-      <section class="impacto">
+      <section v-if="modoAtivo === 'vendedor'" class="impacto">
         <h2>
           <img src="/icons/reciclagem.svg" alt="" class="icone-reciclagem" />
           Seu Impacto
@@ -199,18 +326,44 @@ onMounted(() => {
         </p>
       </section>
 
-      <section class="produtos">
+      <section v-if="modoAtivo === 'vendedor'" class="produtos">
         <h2>Meus Produtos</h2>
 
         <div v-if="produtos.length === 0" class="vazio">
           <p class="texto-vazio">Você ainda não anunciou nenhuma peça</p>
-          <RouterLink to="/anunciar" class="botao-anunciar">
-            Clique aqui para anunciar
-          </RouterLink>
+          <RouterLink to="/anunciar" class="botao-anunciar"> Clique aqui para anunciar </RouterLink>
         </div>
 
         <div v-else class="grid">
-          <ProductCard v-for="produto in produtos" :key="produto.id" :produto="produto" :mostrar-favorito="false" />
+          <ProductCard
+            v-for="produto in produtos"
+            :key="produto.id"
+            :produto="produto"
+            :mostrar-favorito="false"
+          />
+        </div>
+      </section>
+      <section v-if="modoAtivo === 'comprador'" class="comprador">
+        <h2>Minhas compras</h2>
+
+        <div class="pedidos-vazios">
+          <p>Seus pedidos aparecerão aqui!</p>
+        </div>
+
+        <div class="favoritos">
+          <h2>Meus favoritos</h2>
+
+          <div v-if="produtosFavoritos.length > 0" class="lista-produtos">
+            <ProductCard
+              v-for="produto in produtosFavoritos"
+              :key="produto.id"
+              :produto="produto"
+            />
+          </div>
+
+          <div v-else class="pedidos-vazios">
+            <p>Você ainda não tem produtos favoritos.</p>
+          </div>
         </div>
       </section>
     </div>
@@ -373,8 +526,72 @@ onMounted(() => {
   opacity: 0.6;
 }
 
+.botao-excluir {
+  margin-top: 15px;
+  margin-bottom: auto;
+  background-color: transparent;
+  border-color: transparent;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.excluir {
+  width: 32px;
+  height: 32px;
+}
+
+.botao-excluir:hover {
+  opacity: 0.6;
+}
+
 .input-oculto {
   display: none;
+}
+
+.alternancia-modo {
+  margin: 0 auto 45px;
+  text-align: center;
+}
+
+.alternancia-modo p {
+  margin-bottom: 15px;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.3rem;
+  color: #555;
+}
+
+.barra-modos {
+  display: flex;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 5px;
+  border: 1px solid #d3cec8;
+  border-radius: 30px;
+  background-color: #f1e4d3;
+}
+
+.barra-modos button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 25px;
+  background-color: transparent;
+  color: #555;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.barra-modos button.ativo {
+  background-color: #c40c6c;
+  color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
+}
+
+.barra-modos button:hover {
+  opacity: 0.85;
 }
 
 .divisoria {
@@ -449,6 +666,35 @@ onMounted(() => {
 .vazio .texto-vazio {
   color: #555;
   font-size: 1.4rem;
+}
+
+.comprador h2 {
+  margin: 0 0 25px 8px;
+  font-family: 'Marcellus', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+}
+
+.pedidos-vazios {
+  padding: 30px 20px;
+  margin-bottom: 55px;
+  border: 1px solid #d3cec8;
+  box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+  text-align: center;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.2rem;
+  color: #555;
+}
+
+.favoritos h2 {
+  margin-bottom: 30px;
+}
+
+.lista-produtos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 19px;
 }
 
 .vazio .botao-anunciar {
@@ -533,6 +779,10 @@ onMounted(() => {
 
   .vazio .botao-anunciar {
     font-size: 1.1rem;
+  }
+
+  .lista-produtos {
+    gap: 17px;
   }
 }
 
@@ -627,6 +877,11 @@ onMounted(() => {
   .vazio .botao-anunciar {
     font-size: 1rem;
   }
+
+  .lista-produtos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -670,8 +925,6 @@ onMounted(() => {
   .edicao-nome button {
     font-size: 1rem;
     padding: 5px 10px;
-
-
   }
 
   .quantidade {
@@ -683,6 +936,17 @@ onMounted(() => {
   }
 
   .sair {
+    width: 24px;
+    height: 24px;
+  }
+
+  .botao-excluir {
+    margin-top: 5px;
+    margin-left: 0;
+    align-self: flex-start;
+  }
+
+  .excluir {
     width: 24px;
     height: 24px;
   }
@@ -725,10 +989,10 @@ onMounted(() => {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+
+  .lista-produtos {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
 }
 </style>
-
-
-
-
-
