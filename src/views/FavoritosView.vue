@@ -1,9 +1,10 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'  
 import ProductCard from '@/components/products/ProductCard.vue'
+import produtos from '@/data/product'
+import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const produtos = ref([])
-
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
 const favoritosSalvos = JSON.parse(localStorage.getItem('favoritos') || '{}')
 
@@ -23,11 +24,15 @@ const favoritos = computed(() => {
     return []
   }
 
-  const idsFavoritos = favoritosSalvos[usuarioLogado.email] || []
+  const idsFavoritos = favoritosSalvos[usuarioLogado.id] || []
 
   return produtos.value.filter((produto) =>
     idsFavoritos.some((id) => String(id) === String(produto.id))
   )
+})
+
+onMounted(() => {
+  carregarFavoritos()
 })
 </script>
 

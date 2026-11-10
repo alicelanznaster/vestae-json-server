@@ -1,4 +1,3 @@
-```vue
 <script setup>
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
@@ -8,15 +7,21 @@ import { carregarCarrinho } from '@/utils/cartUtils'
 let email = ref('')
 let senha = ref('')
 let mostrarSenha = ref(false)
-const router = useRouter()
 
-function entrar() {
+const router = useRouter()
+const API_URL = 'http://localhost:3000'
+
+async function entrar() {
   if (email.value === '' || senha.value === '') {
     alert('Preencha todos os campos!')
     return
   }
 
-  const usuarios = JSON.parse(localStorage.getItem('usuarios') ?? '[]')
+  const resposta = await fetch(`${API_URL}/usuarios`)
+  const usuarios = await resposta.json()
+console.log('ID do usuário:', usuarios[0].id)
+console.log('Dados completos:', JSON.stringify(usuarios[0], null, 2))
+
   const usuario = usuarios.find(
     (usuario) => usuario.email === email.value.toLowerCase() && usuario.senha === senha.value,
   )
@@ -32,11 +37,11 @@ function entrar() {
   if (produtoParaFavoritar) {
     const id = Number(produtoParaFavoritar)
     const favoritos = JSON.parse(localStorage.getItem('favoritos') || '{}')
-    if (!favoritos[usuario.email]) {
-      favoritos[usuario.email] = []
+    if (!favoritos[usuario.id]) {
+      favoritos[usuario.id] = []
     }
-    if (!favoritos[usuario.email].includes(id)) {
-      favoritos[usuario.email].push(id)
+    if (!favoritos[usuario.id].includes(id)) {
+      favoritos[usuario.id].push(id)
     }
 
     localStorage.setItem('favoritos', JSON.stringify(favoritos))
@@ -57,7 +62,6 @@ function entrar() {
   }
 }
 </script>
-```
 
 <template>
   <main class="pagina">

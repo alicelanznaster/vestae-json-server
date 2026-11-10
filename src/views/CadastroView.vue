@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 
 let nome = ref('')
 let email = ref('')
@@ -8,15 +8,20 @@ let telefone = ref('')
 let senha = ref('')
 let confirmarSenha = ref('')
 let termos = ref(false)
+let tipoPerfil = ref('')
 
 let mostrarSenha = ref(false)
 let mostrarConfirmarSenha = ref(false)
 
-function cadastrar() {
+const API_URL = 'http://localhost:3000'
+const router = useRouter()
+
+async function cadastrar() {
   if (
     nome.value === '' ||
     email.value === '' ||
     telefone.value === '' ||
+    tipoPerfil.value === '' ||
     senha.value === '' ||
     confirmarSenha.value === '' ||
     termos.value === false
@@ -50,33 +55,43 @@ function cadastrar() {
     return
   }
 
-  let usuarios = JSON.parse(localStorage.getItem('usuarios')) || [] //pega os usuarios já salvos
+  const respostaUsuarios = await fetch(`${API_URL}/usuarios`)
+  const usuarios = await respostaUsuarios.json()
 
   let emailExiste = usuarios.some(
     (usuario) => usuario.email.toLowerCase() === email.value.toLowerCase(),
-  ) //evita cadastro de emails iguais
+  )
 
   if (emailExiste) {
     alert('Este e-mail já está cadastrado!')
     return
   }
 
-  // adiciona o novo usuário
   const novoUsuario = {
     nome: nome.value,
     email: email.value.toLowerCase(),
     telefone: telefone.value,
     senha: senha.value,
     termos: termos.value,
+    tipoPerfil: tipoPerfil.value,
   }
 
-  usuarios.push(novoUsuario)
+  const resposta = await fetch(`${API_URL}/usuarios`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(novoUsuario),
+  })
 
-  // salva os usuários
-  localStorage.setItem('usuarios', JSON.stringify(usuarios))
+  if (!resposta.ok) {
+    alert('Erro ao realizar cadastro!')
+    return
+  }
 
-  // salva o usuário recém-cadastrado como usuário logado
-  localStorage.setItem('usuarioLogado', JSON.stringify(novoUsuario))
+  const usuarioSalvo = await resposta.json()
+
+  localStorage.setItem('usuarioLogado', JSON.stringify(usuarioSalvo))
 
   nome.value = ''
   email.value = ''
@@ -86,6 +101,7 @@ function cadastrar() {
   termos.value = false
 
   alert('Cadastro realizado com sucesso!')
+  router.push('/')
 }
 
 function formatarTelefone() {
@@ -139,6 +155,25 @@ function formatarTelefone() {
             placeholder="Telefone *"
             maxlength="15"
           />
+
+          <div class="perfil">
+            <div class="fundo-perfil">
+              <p>Qual será seu perfil principal? *</p>
+
+              <div class="opcoes-perfil">
+                <label>
+                  <input type="radio" v-model="tipoPerfil" value="comprador" />
+                  Comprador
+                </label>
+
+                <label>
+                  <input type="radio" v-model="tipoPerfil" value="vendedor" />
+                  Vendedor
+                </label>
+              </div>
+            </div>
+            <span>Você poderá comprar e vender independentemente da escolha.</span>
+          </div>
 
           <div class="senha">
             <input
@@ -293,6 +328,52 @@ input::placeholder {
 .telefone input:focus {
   border: none;
   outline: none;
+}
+
+.perfil {
+  width: 100%;
+  text-align: left;
+  margin: 8px 0;
+}
+
+.perfil p {
+  font-size: 15px;
+  margin-bottom: 12px;
+}
+
+.fundo-perfil {
+  background-color: #f5ece0;
+  padding: 14px 16px;
+  border-radius: 8px;
+}
+
+.opcoes-perfil {
+  display: flex;
+  gap: 25px;
+  margin-bottom: 8px;
+  font-family: 'Google Sans Flex', sans-serif;
+}
+
+.opcoes-perfil label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.opcoes-perfil input {
+  width: 17px;
+  height: 17px;
+  padding: 0;
+  margin: 0;
+  accent-color: #c00b63;
+  cursor: pointer;
+}
+
+.perfil span {
+  font-size: 12px;
+  color: #666;
 }
 
 .senha {

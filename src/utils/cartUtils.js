@@ -120,5 +120,5 @@ function selecionarProduto(idItem) {
   }
 }
 
-export { ultimoProdAdd, mostrarAviso, carrinho, addCarrinho, removerCarrinho, totalCarrinho, limparCarrinho, selecionarProduto, selecionados, carregarCarrinho }
+export { ultimoProdAdd, mostrarAviso, carrinho, addCarrinho, removerCarrinho, totalCarrinho, limparCarrinho, selecionarProduto, selecionados, carregarCarrinho, salvarCarrinho }
 
