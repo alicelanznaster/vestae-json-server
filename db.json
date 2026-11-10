@@ -1,5 +1,16 @@
 {
-  "usuarios": [],
+  "usuarios": [
+    {
+      "nome": "Alice Lanznaster",
+      "email": "alicelanznaster@gmail.com",
+      "telefone": "(47) 99924-4745",
+      "senha": "Al200410",
+      "termos": true,
+      "tipoPerfil": "comprador",
+      "id": "uOvLhU9qvZI",
+      "modoAtivo": "vendedor"
+    }
+  ],
   "produtos": [],
   "pedidos": [
     {
