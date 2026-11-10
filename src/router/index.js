@@ -89,11 +89,12 @@ const router = createRouter({
       name: 'detalhes-pedido',
       component: () => import('../views/DetalhesPedidoView.vue'),
     },
+    {
       path: '/configuracoes',
       nome: 'configuracoes',
       component: () => import('../views/ConfiguracoesView.vue'),
-    }
-  ],
+    },
+  ]
 })
 
 export default router

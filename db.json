@@ -9,6 +9,16 @@
       "tipoPerfil": "comprador",
       "id": "uOvLhU9qvZI",
       "modoAtivo": "vendedor"
+    },
+    {
+      "nome": "Ana",
+      "email": "ana@gmail.com",
+      "telefone": "(47) 99924-4745",
+      "senha": "Al200410",
+      "termos": true,
+      "tipoPerfil": "vendedor",
+      "id": "PPDmcC3JECE",
+      "modoAtivo": "comprador"
     }
   ],
   "produtos": [],

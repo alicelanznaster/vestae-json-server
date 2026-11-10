@@ -66,9 +66,7 @@ async function salvarNome() {
   const usuarioAtualizado = await resposta.json()
 
   usuario.value = usuarioAtualizado
-
   localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
-
   editandoNome.value = false
 }
 
@@ -83,7 +81,6 @@ async function carregarModo() {
 
     modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
     usuario.value = usuarioAtualizado
-
     localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
   }
 }
@@ -109,7 +106,6 @@ async function trocarModo(modo) {
 
   usuario.value = usuarioAtualizado
   modoAtivo.value = usuarioAtualizado.modoAtivo
-
   localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
 }
 
@@ -285,33 +281,32 @@ onMounted(() => {
         </p>
       </section>
 
-      <section class="pedidos">
-        <div class="info-pedidos">
+      <section v-if="modoAtivo === 'comprador'" class="comprador">
+        <div class="pedidos">
+          <div class="info-pedidos">
           <h2>Meus Pedidos</h2>
           <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
         </div>
 
         <RouterLink to="/pedidos" class="botao-pedidos">
-          Ver meus pedidos
-          <span>→</span>
+          Ver meus pedidos <span>→</span>
         </RouterLink>
-      </section>
-
-      <section class="produtos">
-        <h2>Meus Produtos</h2>
-
-        <div v-if="produtos.length === 0" class="vazio">
-          <p class="texto-vazio">Você ainda não anunciou nenhuma peça</p>
-          <RouterLink to="/anunciar" class="botao-anunciar"> Clique aqui para anunciar </RouterLink>
         </div>
+        
+         <div class="favoritos">
+          <h2>Meus favoritos</h2>
 
-        <div v-else class="grid">
-          <ProductCard
-            v-for="produto in produtos"
-            :key="produto.id"
-            :produto="produto"
-            :mostrar-favorito="false"
-          />
+          <div v-if="produtosFavoritos.length > 0" class="lista-produtos">
+            <ProductCard
+              v-for="produto in produtosFavoritos"
+              :key="produto.id"
+              :produto="produto"
+            />
+          </div>
+
+          <div v-else class="pedidos-vazios">
+            <p>Você ainda não tem produtos favoritos.</p>
+          </div>
         </div>
       </section>
     </div>
