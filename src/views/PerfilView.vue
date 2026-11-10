@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
 import todosProdutos from '@/data/product'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
@@ -229,11 +229,14 @@ onMounted(() => {
             {{ quantidadeProdutos === 1 ? 'peça anunciada' : 'peças anunciadas' }}
           </p>
         </div>
-
-        <button class="botao-sair" type="button" @click="sair">
-          <img src="/icons/exit.svg" alt="Sair" class="sair" />
-        </button>
-
+        <div class="botoes-perfil">
+          <button class="botao-sair" type="button" @click="sair">
+            <img src="/icons/exit.svg" alt="Sair" class="sair" />
+          </button>
+          <RouterLink to="/configuracoes" class="botao-config">
+            <img src="/icons/configuracoes.svg" alt="configuracoes" class="configuracoes" />
+          </RouterLink>
+        </div>
       </section>
       <section class="alternancia-modo">
         <p>Como deseja utilizar o Vestæ?</p>
@@ -463,40 +466,35 @@ onMounted(() => {
   color: #555;
 }
 
-.botao-sair {
+.botoes-perfil {
+  display: flex;
+  align-items: center;
+  gap: 15px;
   margin-left: auto;
-  margin-top: 15px;
-  margin-bottom: auto;
+  align-self: flex-start;
+}
+
+.botao-sair,
+.botao-config {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  margin: 0;
+  border: none;
   background-color: transparent;
-  border-color: transparent;
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
 
-.sair {
+.sair,
+.configuracoes {
   width: 32px;
   height: 32px;
 }
 
-.botao-sair:hover {
-  opacity: 0.6;
-}
-
-.botao-excluir {
-  margin-top: 15px;
-  margin-bottom: auto;
-  background-color: transparent;
-  border-color: transparent;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.excluir {
-  width: 32px;
-  height: 32px;
-}
-
-.botao-excluir:hover {
+.botao-sair:hover,
+.botao-config:hover {
   opacity: 0.6;
 }
 
