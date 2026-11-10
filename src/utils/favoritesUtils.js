@@ -11,16 +11,16 @@ export function favoritarProduto(produto) {
   }
 
   const favoritos = JSON.parse(localStorage.getItem('favoritos') || '{}')
-  if (!favoritos[usuarioLogado.email]) {
-    favoritos[usuarioLogado.email] = []
+  if (!favoritos[usuarioLogado.id]) {
+    favoritos[usuarioLogado.id] = []
   }
 
-  const posicao = favoritos[usuarioLogado.email].indexOf(produto.id)
+  const posicao = favoritos[usuarioLogado.id].indexOf(produto.id)
   if (posicao === -1) {
-    favoritos[usuarioLogado.email].push(produto.id)
+    favoritos[usuarioLogado.id].push(produto.id)
     produto.favorito = true
   } else {
-    favoritos[usuarioLogado.email].splice(posicao, 1)
+    favoritos[usuarioLogado.id].splice(posicao, 1)
     produto.favorito = false
   }
 
@@ -38,7 +38,7 @@ export function carregarFavoritos() {
   }
 
   const favoritos = JSON.parse(localStorage.getItem('favoritos') || '{}')
-  const favoritosUsuario = favoritos[usuarioLogado.email] || []
+  const favoritosUsuario = favoritos[usuarioLogado.id] || []
 
   for (let i = 0; i < produtos.value.length; i++) {
     if (favoritosUsuario.includes(produtos.value[i].id)) {
