@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
-import todosProdutos from '../../db.json'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const router = useRouter()
@@ -110,7 +109,7 @@ async function trocarModo(modo) {
 }
 
 // pega os produtos salvos no localStorage
-function carregarProdutos() {
+async function carregarProdutos() {
   const anunciosSalvos = JSON.parse(localStorage.getItem('vestae-anuncios')) || []
 
   if (!usuario.value) {
@@ -122,18 +121,32 @@ function carregarProdutos() {
 }
 
 // carrega os produtos favoritos do usuário
-function carregarFavoritosPerfil() {
+async function carregarFavoritosPerfil() {
   if (!usuario.value) {
     produtosFavoritos.value = []
     return
   }
 
-  const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
-  const favoritosUsuario = favoritos[usuario.value.id] || []
+  try {
+    const resposta = await fetch(`${API_URL}/produtos`)
+    const todosProdutos = await resposta.json()
 
-  produtosFavoritos.value = todosProdutos.value.filter((produto) =>
-    favoritosUsuario.includes(produto.id),
-  )
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
+    const favoritosUsuario = favoritos[usuario.value.id] || []
+
+    produtosFavoritos.value = []
+
+    for (let i = 0; i < todosProdutos.length; i++) {
+      for (let j = 0; j < favoritosUsuario.length; j++) {
+        if (String(todosProdutos[i].id) === String(favoritosUsuario[j])) {
+          todosProdutos[i].favorito = true
+          produtosFavoritos.value.push(todosProdutos[i])
+        }
+      }
+    }
+  } catch (erro) {
+    console.error('Erro ao carregar favoritos do perfil:', erro)
+  }
 }
 
 // pega a foto de perfil salva
@@ -284,16 +297,16 @@ onMounted(() => {
       <section v-if="modoAtivo === 'comprador'" class="comprador">
         <div class="pedidos">
           <div class="info-pedidos">
-          <h2>Meus Pedidos</h2>
-          <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
+            <h2>Meus Pedidos</h2>
+            <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
+          </div>
+
+          <RouterLink to="/pedidos" class="botao-pedidos">
+            Ver meus pedidos <span>→</span>
+          </RouterLink>
         </div>
 
-        <RouterLink to="/pedidos" class="botao-pedidos">
-          Ver meus pedidos <span>→</span>
-        </RouterLink>
-        </div>
-        
-         <div class="favoritos">
+        <div class="favoritos">
           <h2>Meus favoritos</h2>
 
           <div v-if="produtosFavoritos.length > 0" class="lista-produtos">
