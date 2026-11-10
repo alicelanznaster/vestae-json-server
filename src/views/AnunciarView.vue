@@ -5,14 +5,16 @@ import UploadImg from '@/components/formulario/UploadImg.vue'
 import DadosForm from '@/components/formulario/DadosForm.vue'
 
 const router = useRouter()
+
 const anuncioTemporario = JSON.parse(localStorage.getItem('anuncioTemporario') || 'null')
 const imagem = ref(anuncioTemporario ? { preview: anuncioTemporario.imagem } : null)
 const publicado = ref(false)
+
 const salvarImagem = (dados) => {
   imagem.value = dados
 }
 
-const publicar = (produto) => {
+const publicar = async (produto) => {
   publicado.value = false
 
   if (!imagem.value) {
@@ -21,6 +23,7 @@ const publicar = (produto) => {
   }
 
   const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
+
   if (!usuarioLogado) {
     const anuncio = {
       ...produto,
@@ -33,24 +36,38 @@ const publicar = (produto) => {
     return
   }
 
-  const anunciosSalvos = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
   const novoAnuncio = {
-    id: Date.now(),
     ...produto,
     imagem: imagem.value.preview,
     email: usuarioLogado.email,
   }
 
-  anunciosSalvos.push(novoAnuncio)
-  localStorage.setItem('vestae-anuncios', JSON.stringify(anunciosSalvos))
-  localStorage.removeItem('anuncioTemporario')
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(novoAnuncio),
+    })
 
-  alert('Anúncio publicado! Agradecemos a preferência!')
+    if (!resposta.ok) {
+      throw new Error('Erro ao publicar anúncio.')
+    }
 
-  publicado.value = true
-  imagem.value = null
+    localStorage.removeItem('anuncioTemporario')
+
+    alert('Anúncio publicado! Agradecemos a preferência!')
+
+    publicado.value = true
+    imagem.value = null
+  } catch (erro) {
+    console.error('Erro ao publicar anúncio:', erro)
+    alert('Não foi possível publicar o anúncio. Tente novamente.')
+  }
 }
 </script>
+
 
 <template>
   <main class="anunciar">

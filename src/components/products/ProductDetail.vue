@@ -1,7 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { produtos } from '@/data/product'
 import { addCarrinho, mostrarAviso } from '@/utils/cartUtils'
 import { formataPreco } from '@/utils/currencyUtils'
 import { favoritarProduto } from '@/utils/favoritesUtils'
@@ -9,6 +8,9 @@ import UploadImg from '../formulario/UploadImg.vue'
 
 const route = useRoute()
 const router = useRouter()
+
+const produtos = ref([])
+const carregando = ref(true)
 
 const editando = ref(false)
 
@@ -22,6 +24,18 @@ const statusEditado = ref('')
 const precoEditado = ref('')
 const imagemEditada = ref('')
 
+// busca os produtos na API
+onMounted(async () => {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    produtos.value = await resposta.json()
+  } catch (erro) {
+    console.error('Erro ao buscar produtos:', erro)
+  } finally {
+    carregando.value = false
+  }
+})
+
 const voltarPagina = () => {
   if (window.history.state && window.history.state.back) {
     router.back()
@@ -30,12 +44,14 @@ const voltarPagina = () => {
   }
 }
 
-// procura primeiro nos produtos fixos e depois nos anunciados pelo usuario
+// procura primeiro na API e depois nos anúncios do usuário
 const produto = computed(() => {
-  const produtoFixo = produtos.value.find((p) => p.id === Number(route.params.id))
+  const produtoApi = produtos.value.find(
+  (p) => String(p.id) === String(route.params.id)
+  )
 
-  if (produtoFixo) {
-    return produtoFixo
+  if (produtoApi) {
+    return produtoApi
   }
 
   const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
@@ -43,7 +59,7 @@ const produto = computed(() => {
   return anuncios.find((p) => p.id === Number(route.params.id))
 })
 
-// faz o botão de add a sacola aparecer só para produtos que não foram publicados pelo usuário logado
+// verifica se o produto pertence ao usuário logado
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
 
 const meuProduto = computed(() => {
@@ -115,6 +131,7 @@ function limitarPreco() {
   }
 }
 </script>
+
 
 <template>
   <div class="pagina">

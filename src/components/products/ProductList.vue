@@ -1,10 +1,20 @@
 <script setup>
-import produtos from '@/data/product'
+import { ref, computed, onMounted } from 'vue'
 import ProductCard from './ProductCard.vue'
-import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
+const produtos = ref([])
+
+// busca os produtos na API
+onMounted(async () => {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    produtos.value = await resposta.json()
+  } catch (erro) {
+    console.error('Erro ao buscar produtos:', erro)
+  }
+})
 
 const produtosFiltrados = computed(() => {
   const busca = route.query.busca?.toLowerCase() || ''
@@ -22,6 +32,7 @@ const produtosFiltrados = computed(() => {
   )
 })
 </script>
+
 
 <template>
   <div class="product-list">

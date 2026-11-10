@@ -1,10 +1,24 @@
 <script setup>
-import produtos from '@/data/product'
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import FiltroPreco from '@/components/products/FiltroPreco.vue'
 
+const produtos = ref([])
+
+// busca os produtos na API quando a pág carrega
+onMounted(async () => {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    produtos.value = await resposta.json()
+  } catch (erro) {
+    console.error('Erro ao buscar produtos:', erro)
+  }
+})
+
+// filtra só os calçados
 const calcados = computed(() => {
-  return produtos.value.filter((produto) => produto.categoria === 'Calçado')
+  return produtos.value.filter(
+    (produto) => produto.categoria === 'Calçado'
+  )
 })
 </script>
 
