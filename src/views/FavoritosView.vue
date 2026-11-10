@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'  
 import ProductCard from '@/components/products/ProductCard.vue'
-import produtos from '@/data/product'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const produtos = ref([])

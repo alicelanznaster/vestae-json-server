@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
-import todosProdutos from '@/data/product'
+import todosProdutos from '../../db.json'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const router = useRouter()
