@@ -1,6 +1,51 @@
-
 {
   "usuarios": [],
   "produtos": [],
-  "pedidos": []
+  "pedidos": [
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [
+        {
+          "id": 32,
+          "titulo": "Chinelo Farm",
+          "imagem": "/produtos/chinelocal.png",
+          "descricao": "Chinelo confortável e bem conservado. Ainda está em ótimo estado para o dia a dia.",
+          "categoria": "Calçado",
+          "tamanho": "36",
+          "condicao": "Usado",
+          "marca": "Havaianas",
+          "preco": 24.9,
+          "favorito": false,
+          "status": "Disponível"
+        },
+        {
+          "id": 3,
+          "titulo": "Calça Rosa",
+          "imagem": "/produtos/calcarosafem.png",
+          "descricao": "Comprei pela internet, mas acabou não servindo. Nunca foi usada.",
+          "categoria": "Feminino",
+          "tamanho": "38",
+          "condicao": "Novo",
+          "marca": "",
+          "preco": 39.9,
+          "favorito": false,
+          "status": "Disponível"
+        }
+      ],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "43",
+        "bairro": "Santa Catarina",
+        "complemento": "asadada"
+      },
+      "metodoPagamento": "Cartão de Débito",
+      "total": 64.8,
+      "data": "2026-11-10T01:33:11.874Z",
+      "status": "Pedido confirmado",
+      "id": "uBHbfrLREeQ"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
 }

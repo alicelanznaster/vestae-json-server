@@ -14,6 +14,8 @@ import RatingView from '@/views/RatingView.vue'
 import PagamentoView from '@/views/PagamentoView.vue'
 import CadastroView from '@/views/CadastroView.vue'
 import LoginView from '@/views/LoginView.vue'
+import PedidosView from '@/views/PedidosView.vue'
+import DetalhesPedidoView from '@/views/DetalhesPedidoView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -93,6 +95,16 @@ const router = createRouter({
       nome: 'login',
       component: LoginView, 
     }, 
+    {
+      path: '/pedidos',
+      nome: 'pedidos',
+      component: PedidosView, 
+    }, 
+    {
+      path: '/pedidos/:id',
+      name: 'detalhes-pedido',
+      component: DetalhesPedidoView,
+    },
   ],
 })
 

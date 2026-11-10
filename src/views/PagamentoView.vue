@@ -1,5 +1,5 @@
 <script setup>
-import { carrinho, selecionados } from '@/utils/cartUtils'
+import { carrinho, selecionados, salvarCarrinho } from '@/utils/cartUtils'
 import { formataPreco } from '@/utils/currencyUtils'
 import { bairros } from '@/data/bairros'
 import { ref, computed } from 'vue'
@@ -61,12 +61,12 @@ function finalizarCompra() {
     return !selecionados.value.includes(item.id)
   })
 
-  localStorage.setItem('carrinho', JSON.stringify(carrinho.value))
+  salvarCarrinho()
 
   selecionados.value = []
 }
 
-function confirmarPagamento() {
+async function confirmarPagamento() {
   if (!cep.value || !rua.value || !numero.value || !bairro.value || !metodoPagamento.value) {
     alert('Preencha todos os campos obrigatórios')
     return
@@ -77,7 +77,47 @@ function confirmarPagamento() {
     return
   }
 
+  const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
+
+  const pedido = {
+    usuarioEmail: usuario.email,
+    usuarioNome: usuario.nome,
+    produtos: produtosSelecionados.value,
+    endereco: {
+      cep: cep.value,
+      rua: rua.value,
+      numero: numero.value,
+      bairro: bairro.value,
+      complemento: complemento.value,
+    },
+    metodoPagamento: metodoPagamento.value,
+    total: totalSelecionados.value,
+    data: new Date().toISOString(),
+    status: 'Pedido confirmado',
+  }
+
   carregando.value = true
+
+  const resposta = await fetch('http://localhost:3000/pedidos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(pedido),
+  })
+
+  if (!resposta.ok) {
+    alert('Não foi possível registrar seu pedido. Tente novamente.')
+    carregando.value = false
+    return
+  }
+
+  carregando.value = false
+  compraConcluida.value = true
+  mostrarCheck.value = true
+
+  finalizarCompra()
+
   cep.value = ''
   rua.value = ''
   numero.value = ''
@@ -87,15 +127,8 @@ function confirmarPagamento() {
   mostrarBairros.value = false
 
   setTimeout(() => {
-    carregando.value = false
-    compraConcluida.value = true
-    mostrarCheck.value = true
-    finalizarCompra()
-
-    setTimeout(() => {
-      mostrarCheck.value = false
-    }, 2000)
-  }, 3000)
+    mostrarCheck.value = false
+  }, 2000)
 }
 
 const totalSelecionados = computed(() => {
