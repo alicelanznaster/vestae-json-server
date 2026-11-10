@@ -33,47 +33,6 @@ function sair() {
   router.push('/login')
 }
 
-async function excluirConta() {
-  const confirmar = confirm(
-    'Tem certeza que deseja excluir sua conta? Essa ação não poderá ser desfeita.',
-  )
-
-  if (!confirmar) {
-    return
-  }
-
-  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`, {
-    method: 'DELETE',
-  })
-
-  if (!resposta.ok) {
-    alert('Erro ao excluir a conta!')
-    return
-  }
-
-  const email = usuario.value.email
-
-  // remove os favoritos dessa conta
-  const favoritos = JSON.parse(localStorage.getItem('favoritos') || '{}')
-  delete favoritos[email]
-  localStorage.setItem('favoritos', JSON.stringify(favoritos))
-
-  // remove os anúncios dessa conta
-  const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
-  const anunciosAtualizados = anuncios.filter((produto) => produto.email !== email)
-  localStorage.setItem('vestae-anuncios', JSON.stringify(anunciosAtualizados))
-
-  // remove os outros dados locais
-  localStorage.removeItem('carrinho')
-  localStorage.removeItem(`vestae-foto-${email}`)
-  localStorage.removeItem('usuarioLogado')
-  localStorage.removeItem('produtoParaFavoritar')
-  localStorage.removeItem('voltarDepoisDoLogin')
-
-  alert('Sua conta foi excluída com sucesso!')
-  router.push('/')
-}
-
 function editarNome() {
   novoNome.value = usuario.value?.nome || ''
   editandoNome.value = true
@@ -174,7 +133,7 @@ function carregarFavoritosPerfil() {
   }
 
   const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
-  const favoritosUsuario = favoritos[usuario.value.email] || []
+  const favoritosUsuario = favoritos[usuario.value.id] || []
 
   produtosFavoritos.value = todosProdutos.value.filter((produto) =>
     favoritosUsuario.includes(produto.id),
@@ -275,9 +234,6 @@ onMounted(() => {
           <img src="/icons/exit.svg" alt="Sair" class="sair" />
         </button>
 
-        <button class="botao-excluir" type="button" @click="excluirConta">
-          <img src="/public/icons/lixeira-rosa.svg" alt="excluir" class="excluir" />
-        </button>
       </section>
       <section class="alternancia-modo">
         <p>Como deseja utilizar o Vestæ?</p>

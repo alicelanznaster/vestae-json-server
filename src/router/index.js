@@ -1,19 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '@/views/HomeView.vue'
-import ProductList from '@/components/products/ProductList.vue'
-import FemininoView from '../views/FemininoView.vue'
-import MasculinoView from '../views/MasculinoView.vue'
-import AcessoriosView from '../views/AcessoriosView.vue'
-import CalcadosView from '../views/CalcadosView.vue'
-import SobreView from '../views/SobreView.vue'
-import FavoritosView from '../views/FavoritosView.vue'
-import ProductDetail from '@/components/products/ProductDetail.vue'
-import AnunciarView from '../views/AnunciarView.vue'
-import PerfilView from '../views/PerfilView.vue'
-import RatingView from '@/views/RatingView.vue'
-import PagamentoView from '@/views/PagamentoView.vue'
-import CadastroView from '@/views/CadastroView.vue'
-import LoginView from '@/views/LoginView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -21,78 +6,84 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView,
+      component: () => import('../views/HomeView.vue'),
     },
     {
       path: '/masculino',
       name: 'masculino',
-      component: MasculinoView,
+      component: () => import('../views/MasculinoView.vue'),
     },
     {
       path: '/feminino',
       name: 'feminino',
-      component: FemininoView,
+      component: () => import('../views/FemininoView.vue'),
     },
     {
       path: '/acessorios',
       name: 'acessorios',
-      component: AcessoriosView,
+      component: () => import('../views/AcessoriosView.vue'),
     },
     {
       path: '/calcados',
       name: 'calcados',
-      component: CalcadosView,
+      component: () => import('../views/CalcadosView.vue'),
     },
     {
       path:'/sobre',
       name:'sobre',
-      component: SobreView,
+      component: () => import('../views/SobreView.vue'),
     },
     {
       path: '/produtos',
       name: 'products',
-      component: ProductList,
+      component: () => import('../components/products/ProductList.vue'),
     },
     {
       path: '/favoritos',
       name: 'favoritos',
-      component: FavoritosView,
+      component: () => import('../views/FavoritosView.vue'),
     },
     {
       path: '/produto/:id',
       name: 'produto',
-      component: ProductDetail,
+      component: () => import('../components/products/ProductDetail.vue'),
     },
     {
       path: '/anunciar',
       name: 'anunciar',
-      component: AnunciarView,
+      component: () => import('../views/AnunciarView.vue'),
     },
     {
       path: '/perfil',
       name: 'perfil',
-      component: PerfilView,
+      component: () => import('../views/PerfilView.vue'),
     },
     {
       path: '/pagamento',
       name: 'pagamento',
-      component: PagamentoView,
+      component: () => import('../views/PagamentoView.vue'),
     },
     {
       path: '/avaliacao',
       name: 'avaliacao',
-      component: RatingView,
+      component: () => import('../views/RatingView.vue'),
     },
     {
       path: '/cadastro',
       nome: 'cadastro',
-      component: CadastroView, 
+      component: () => import('../views/CadastroView.vue'), 
     }, 
     {
       path: '/login',
       nome: 'login',
-      component: LoginView, 
+      component: () => import('../views/LoginView.vue'), 
+      
     }, 
+    {
+      path: '/configuracoes',
+      nome: 'configuracoes',
+      component: () => import('../views/ConfiguracoesView.vue'),
+    }
   ],
 })
 

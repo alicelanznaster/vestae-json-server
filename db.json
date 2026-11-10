@@ -1,15 +1,6 @@
 {
   "usuarios": [
     {
-      "nome": "julia",
-      "email": "julia@gmail.com",
-      "telefone": "(88) 88888-8888",
-      "senha": "a123456789",
-      "termos": true,
-      "tipoPerfil": "vendedor",
-      "id": "6XlFM5DnWd4"
-    },
-    {
       "nome": "Alice Lanznaster",
       "email": "alicelanznaster@gmail.com",
       "telefone": "(47) 99924-4745",
