@@ -20,7 +20,6 @@ import { RouterLink } from 'vue-router';
                 </h2>
                 <ul>
                     <li><RouterLink to="/">Home</RouterLink></li>
-                    <li><RouterLink to="/sacola">Sacola</RouterLink></li>
                     <li><RouterLink to="/calcados">Calçados</RouterLink></li>
                     <li><RouterLink to="/masculino">Masculino</RouterLink></li>
                     <li><RouterLink to="/feminino">Feminino</RouterLink></li>

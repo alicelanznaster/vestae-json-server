@@ -1,13 +1,29 @@
 <script setup>
+import { ref, computed, onMounted } from 'vue'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
-import produtos from '@/data/product'
 import ProductCard from '@/components/products/ProductCard.vue'
 
-const produtosDestaque = produtos.value.filter((produto) => produto.destaque)
+const produtos = ref([])
+
+// busca os produtos na API
+onMounted(async () => {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    produtos.value = await resposta.json()
+  } catch (erro) {
+    console.error('Erro ao buscar produtos:', erro)
+  }
+})
+
+// filtra apenas os produtos em destaque
+const produtosDestaque = computed(() => {
+  return produtos.value.filter((produto) => produto.destaque)
+})
 </script>
+
 
 <template>
   <section class="destaques">

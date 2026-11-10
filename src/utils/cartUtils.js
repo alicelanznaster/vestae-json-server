@@ -1,4 +1,3 @@
-import { produtos } from '@/data/product'
 import { ref } from 'vue'
 
 const ultimoProdAdd = ref('')
@@ -52,26 +51,35 @@ function salvarCarrinho() {
 
 carregarCarrinho()
 
-function addCarrinho(idItem) {
-  const item = produtos.value.find((p) => p.id === idItem)
+async function addCarrinho(idItem) {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    const produtos = await resposta.json()
 
-  if (item) {
-    ultimoProdAdd.value = item.titulo
-
-    const itemExistente = carrinho.value.find(
-      (produto) => produto.id === idItem
+    const item = produtos.find(
+      (p) => String(p.id) === String(idItem)
     )
 
-    if (!itemExistente) {
-      carrinho.value.push(item)
+    if (item) {
+      ultimoProdAdd.value = item.titulo
+
+      const itemExistente = carrinho.value.find(
+        (produto) => String(produto.id) === String(idItem)
+      )
+
+      if (!itemExistente) {
+        carrinho.value.push(item)
+      }
+
+      salvarCarrinho()
+      mostrarAviso.value = true
+
+      setTimeout(() => {
+        mostrarAviso.value = false
+      }, 2000)
     }
-
-    salvarCarrinho()
-    mostrarAviso.value = true
-
-    setTimeout(() => {
-      mostrarAviso.value = false
-    }, 2000)
+  } catch (erro) {
+    console.error('Erro ao adicionar produto ao carrinho:', erro)
   }
 }
 
@@ -112,5 +120,5 @@ function selecionarProduto(idItem) {
   }
 }
 
-export { ultimoProdAdd, mostrarAviso, carrinho, addCarrinho, removerCarrinho, totalCarrinho, limparCarrinho, selecionarProduto, selecionados, carregarCarrinho }
+export { ultimoProdAdd, mostrarAviso, carrinho, addCarrinho, removerCarrinho, totalCarrinho, limparCarrinho, selecionarProduto, selecionados, carregarCarrinho, salvarCarrinho }
 
