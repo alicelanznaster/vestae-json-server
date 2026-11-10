@@ -80,6 +80,15 @@ const router = createRouter({
       
     }, 
     {
+      path: '/pedidos',
+      nome: 'pedidos',
+      component: () => import('../views/PedidosView.vue'), 
+    }, 
+    {
+      path: '/pedidos/:id',
+      name: 'detalhes-pedido',
+      component: () => import('../views/DetalhesPedidoView.vue'),
+    },
       path: '/configuracoes',
       nome: 'configuracoes',
       component: () => import('../views/ConfiguracoesView.vue'),

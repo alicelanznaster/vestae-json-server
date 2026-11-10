@@ -12,6 +12,83 @@
     }
   ],
   "produtos": [],
-  "pedidos": [],
+  "pedidos": [
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [
+        {
+          "id": 2,
+          "titulo": "Calça Jeans",
+          "imagem": "/produtos/calcajeansfem.png",
+          "descricao": "Calça confortável e bem conservada. Estou desapegando porque já não faz mais parte do meu estilo.",
+          "categoria": "Feminino",
+          "tamanho": "40",
+          "condicao": "Usado",
+          "marca": "",
+          "preco": 49.9,
+          "favorito": false,
+          "status": "Disponível"
+        }
+      ],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "43",
+        "bairro": "Santa Catarina"
+      },
+      "metodoPagamento": "Cartão de Débito",
+      "total": 49.9,
+      "data": "2026-11-10T01:58:08.344Z",
+      "status": "Pedido confirmado",
+      "id": "wXexipw7mcA"
+    },
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [
+        {
+          "id": 45,
+          "titulo": "Bolsa de Crochê",
+          "imagem": "/produtos/bolsatricotace.png",
+          "descricao": "Bolsa linda e diferente, usada poucas vezes e muito bem cuidada.",
+          "categoria": "Acessório",
+          "tamanho": "Único",
+          "condicao": "Usado",
+          "marca": "",
+          "preco": 49.9,
+          "favorito": false,
+          "status": "Disponível"
+        }
+      ],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "37",
+        "bairro": "Santa Catarina"
+      },
+      "metodoPagamento": "PIX",
+      "total": 49.9,
+      "data": "2026-11-10T02:00:33.703Z",
+      "status": "Pedido confirmado",
+      "id": "rI8dX1HtIo8"
+    },
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "45",
+        "bairro": "Santa Catarina"
+      },
+      "metodoPagamento": "Cartão de Crédito",
+      "total": 0,
+      "data": "2026-11-10T02:07:16.984Z",
+      "status": "Pedido confirmado",
+      "id": "9r-OQ9cs-g8"
+    }
+  ],
   "$schema": "./node_modules/json-server/schema.json"
 }

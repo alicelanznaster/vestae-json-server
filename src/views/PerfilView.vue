@@ -285,7 +285,19 @@ onMounted(() => {
         </p>
       </section>
 
-      <section v-if="modoAtivo === 'vendedor'" class="produtos">
+      <section class="pedidos">
+        <div class="info-pedidos">
+          <h2>Meus Pedidos</h2>
+          <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
+        </div>
+
+        <RouterLink to="/pedidos" class="botao-pedidos">
+          Ver meus pedidos
+          <span>→</span>
+        </RouterLink>
+      </section>
+
+      <section class="produtos">
         <h2>Meus Produtos</h2>
 
         <div v-if="produtos.length === 0" class="vazio">
@@ -300,29 +312,6 @@ onMounted(() => {
             :produto="produto"
             :mostrar-favorito="false"
           />
-        </div>
-      </section>
-      <section v-if="modoAtivo === 'comprador'" class="comprador">
-        <h2>Minhas compras</h2>
-
-        <div class="pedidos-vazios">
-          <p>Seus pedidos aparecerão aqui!</p>
-        </div>
-
-        <div class="favoritos">
-          <h2>Meus favoritos</h2>
-
-          <div v-if="produtosFavoritos.length > 0" class="lista-produtos">
-            <ProductCard
-              v-for="produto in produtosFavoritos"
-              :key="produto.id"
-              :produto="produto"
-            />
-          </div>
-
-          <div v-else class="pedidos-vazios">
-            <p>Você ainda não tem produtos favoritos.</p>
-          </div>
         </div>
       </section>
     </div>
@@ -564,6 +553,66 @@ onMounted(() => {
   border-radius: 4px;
   box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
   background-color: #fcf5eb;
+}
+
+.pedidos {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 58px;
+  padding: 24px 22px;
+  box-sizing: border-box;
+  border: 1px solid #d3cec8;
+  border-radius: 4px;
+  box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
+  background-color: #fcf5eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.info-pedidos h2 {
+  margin: 0 0 12px;
+  font-family: 'Marcellus', sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.info-pedidos p {
+  margin: 0;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #555;
+}
+
+.botao-pedidos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 175px;
+  padding: 13px 17px;
+  box-sizing: border-box;
+  border: 1px solid #c40c6c;
+  border-radius: 4px;
+  background-color: #c40c6c;
+  color: white;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1rem;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.botao-pedidos:hover {
+  background-color: #a80959;
+}
+
+.botao-pedidos span {
+  font-size: 1.3rem;
 }
 
 .impacto h2 {
@@ -832,9 +881,23 @@ onMounted(() => {
     font-size: 1rem;
   }
 
-  .lista-produtos {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+  .pedidos {
+    padding: 22px;
+    gap: 15px;
+  }
+
+  .info-pedidos h2 {
+    font-size: 1.8rem;
+  }
+
+  .info-pedidos p {
+    font-size: 1rem;
+  }
+
+  .botao-pedidos {
+    min-width: 145px;
+    padding: 11px;
+    font-size: 0.9rem;
   }
 }
 
@@ -944,9 +1007,20 @@ onMounted(() => {
     gap: 14px;
   }
 
-  .lista-produtos {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+  .pedidos {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .info-pedidos h2 {
+    font-size: 1.6rem;
+  }
+
+  .botao-pedidos {
+    width: 100%;
   }
 }
 </style>
