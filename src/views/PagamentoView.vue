@@ -177,6 +177,7 @@ const produtosSelecionados = computed(() => {
         <p>Obrigada por escolher a VESTÆ.</p>
         <p>Seu pedido foi confirmado.</p>
 
+        <RouterLink to="/pedidos" class="visualizar-compra"> VISUALIZAR COMPRA </RouterLink>
         <RouterLink to="/" class="voltar-inicio"> VOLTAR PARA A PÁGINA INICIAL </RouterLink>
       </div>
 
@@ -381,9 +382,12 @@ h2 {
   margin: 8px 0;
 }
 
-.voltar-inicio {
-  display: inline-block;
-  margin-top: 25px;
+.visualizar-compra {
+  display: block;
+  width: 280px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  margin-top: 30px;
   background-color: #c00b63;
   color: white;
   text-decoration: none;
@@ -391,6 +395,17 @@ h2 {
   padding: 14px 20px;
   border-radius: 10px;
   font-size: 16px;
+  text-align: center;
+}
+
+.voltar-inicio {
+  display: block;
+  width: fit-content;
+  margin: 12px auto 0;
+  color: #c00b63;
+  text-decoration: underline;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 15px;
 }
 
 .conteudo {

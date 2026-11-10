@@ -7,28 +7,15 @@
       "usuarioNome": "Flavia busa",
       "produtos": [
         {
-          "id": 32,
-          "titulo": "Chinelo Farm",
-          "imagem": "/produtos/chinelocal.png",
-          "descricao": "Chinelo confortável e bem conservado. Ainda está em ótimo estado para o dia a dia.",
-          "categoria": "Calçado",
-          "tamanho": "36",
-          "condicao": "Usado",
-          "marca": "Havaianas",
-          "preco": 24.9,
-          "favorito": false,
-          "status": "Disponível"
-        },
-        {
-          "id": 3,
-          "titulo": "Calça Rosa",
-          "imagem": "/produtos/calcarosafem.png",
-          "descricao": "Comprei pela internet, mas acabou não servindo. Nunca foi usada.",
+          "id": 2,
+          "titulo": "Calça Jeans",
+          "imagem": "/produtos/calcajeansfem.png",
+          "descricao": "Calça confortável e bem conservada. Estou desapegando porque já não faz mais parte do meu estilo.",
           "categoria": "Feminino",
-          "tamanho": "38",
-          "condicao": "Novo",
+          "tamanho": "40",
+          "condicao": "Usado",
           "marca": "",
-          "preco": 39.9,
+          "preco": 49.9,
           "favorito": false,
           "status": "Disponível"
         }
@@ -37,14 +24,59 @@
         "cep": "89212-510",
         "rua": "Rua Henfil",
         "numero": "43",
-        "bairro": "Santa Catarina",
-        "complemento": "asadada"
+        "bairro": "Santa Catarina"
       },
       "metodoPagamento": "Cartão de Débito",
-      "total": 64.8,
-      "data": "2026-11-10T01:33:11.874Z",
+      "total": 49.9,
+      "data": "2026-11-10T01:58:08.344Z",
       "status": "Pedido confirmado",
-      "id": "uBHbfrLREeQ"
+      "id": "wXexipw7mcA"
+    },
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [
+        {
+          "id": 45,
+          "titulo": "Bolsa de Crochê",
+          "imagem": "/produtos/bolsatricotace.png",
+          "descricao": "Bolsa linda e diferente, usada poucas vezes e muito bem cuidada.",
+          "categoria": "Acessório",
+          "tamanho": "Único",
+          "condicao": "Usado",
+          "marca": "",
+          "preco": 49.9,
+          "favorito": false,
+          "status": "Disponível"
+        }
+      ],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "37",
+        "bairro": "Santa Catarina"
+      },
+      "metodoPagamento": "PIX",
+      "total": 49.9,
+      "data": "2026-11-10T02:00:33.703Z",
+      "status": "Pedido confirmado",
+      "id": "rI8dX1HtIo8"
+    },
+    {
+      "usuarioEmail": "flaviabusacorrea@gmail.com",
+      "usuarioNome": "Flavia busa",
+      "produtos": [],
+      "endereco": {
+        "cep": "89212-510",
+        "rua": "Rua Henfil",
+        "numero": "45",
+        "bairro": "Santa Catarina"
+      },
+      "metodoPagamento": "Cartão de Crédito",
+      "total": 0,
+      "data": "2026-11-10T02:07:16.984Z",
+      "status": "Pedido confirmado",
+      "id": "9r-OQ9cs-g8"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

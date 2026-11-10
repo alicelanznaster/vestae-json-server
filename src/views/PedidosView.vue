@@ -52,10 +52,8 @@ onMounted(() => {
       </p>
 
       <div v-else-if="pedidos.length === 0" class="vazio">
-        <h2>Nenhum pedido encontrado</h2>
-        <p>Você ainda não realizou nenhuma compra.</p>
-
-        <RouterLink to="/produtos" class="botao-explorar"> Explorar produtos </RouterLink>
+        <p>Você ainda não realizou nenhum pedido.</p>
+        <RouterLink to="/produtos">Explorar produtos</RouterLink>
       </div>
 
       <div v-else class="lista-pedidos">
@@ -256,24 +254,15 @@ onMounted(() => {
 }
 
 .vazio {
-  padding: 55px 20px;
-  border: 1px solid #e5d5dc;
-  border-radius: 5px;
-  background-color: #fffdf9;
   text-align: center;
+  padding: 50px 20px;
+  color: rgb(68, 68, 68);
 }
 
-.vazio h2 {
-  margin: 0 0 12px;
-  font-family: 'Marcellus', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 400;
-}
-
-.vazio p {
-  margin: 0 0 22px;
-  color: #666;
-  font-size: 1.05rem;
+.vazio a {
+  display: inline-block;
+  margin-top: 15px;
+  color: #c00b63;
 }
 
 .botao-explorar {

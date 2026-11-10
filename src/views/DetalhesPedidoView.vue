@@ -223,7 +223,7 @@ onMounted(() => {
         </section>
 
         <div class="acoes-pedido">
-          <button class="botao-excluir" type="button" @click="excluirPedido">Excluir pedido</button>
+          <button class="botao-excluir" type="button" @click="excluirPedido">Cancelar pedido</button>
 
           <RouterLink to="/pedidos" class="botao-voltar"> Voltar aos pedidos </RouterLink>
         </div>
