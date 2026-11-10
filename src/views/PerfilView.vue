@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
-import todosProdutos from '@/data/product'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const router = useRouter()
@@ -66,9 +65,7 @@ async function salvarNome() {
   const usuarioAtualizado = await resposta.json()
 
   usuario.value = usuarioAtualizado
-
   localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
-
   editandoNome.value = false
 }
 
@@ -83,7 +80,6 @@ async function carregarModo() {
 
     modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
     usuario.value = usuarioAtualizado
-
     localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
   }
 }
@@ -109,12 +105,11 @@ async function trocarModo(modo) {
 
   usuario.value = usuarioAtualizado
   modoAtivo.value = usuarioAtualizado.modoAtivo
-
   localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
 }
 
 // pega os produtos salvos no localStorage
-function carregarProdutos() {
+async function carregarProdutos() {
   const anunciosSalvos = JSON.parse(localStorage.getItem('vestae-anuncios')) || []
 
   if (!usuario.value) {
@@ -126,18 +121,32 @@ function carregarProdutos() {
 }
 
 // carrega os produtos favoritos do usuário
-function carregarFavoritosPerfil() {
+async function carregarFavoritosPerfil() {
   if (!usuario.value) {
     produtosFavoritos.value = []
     return
   }
 
-  const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
-  const favoritosUsuario = favoritos[usuario.value.id] || []
+  try {
+    const resposta = await fetch(`${API_URL}/produtos`)
+    const todosProdutos = await resposta.json()
 
-  produtosFavoritos.value = todosProdutos.value.filter((produto) =>
-    favoritosUsuario.includes(produto.id),
-  )
+    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
+    const favoritosUsuario = favoritos[usuario.value.id] || []
+
+    produtosFavoritos.value = []
+
+    for (let i = 0; i < todosProdutos.length; i++) {
+      for (let j = 0; j < favoritosUsuario.length; j++) {
+        if (String(todosProdutos[i].id) === String(favoritosUsuario[j])) {
+          todosProdutos[i].favorito = true
+          produtosFavoritos.value.push(todosProdutos[i])
+        }
+      }
+    }
+  } catch (erro) {
+    console.error('Erro ao carregar favoritos do perfil:', erro)
+  }
 }
 
 // pega a foto de perfil salva
@@ -285,28 +294,16 @@ onMounted(() => {
         </p>
       </section>
 
-      <section v-if="modoAtivo === 'vendedor'" class="produtos">
-        <h2>Meus Produtos</h2>
-
-        <div v-if="produtos.length === 0" class="vazio">
-          <p class="texto-vazio">Você ainda não anunciou nenhuma peça</p>
-          <RouterLink to="/anunciar" class="botao-anunciar"> Clique aqui para anunciar </RouterLink>
-        </div>
-
-        <div v-else class="grid">
-          <ProductCard
-            v-for="produto in produtos"
-            :key="produto.id"
-            :produto="produto"
-            :mostrar-favorito="false"
-          />
-        </div>
-      </section>
       <section v-if="modoAtivo === 'comprador'" class="comprador">
-        <h2>Minhas compras</h2>
+        <div class="pedidos">
+          <div class="info-pedidos">
+            <h2>Meus Pedidos</h2>
+            <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
+          </div>
 
-        <div class="pedidos-vazios">
-          <p>Seus pedidos aparecerão aqui!</p>
+          <RouterLink to="/pedidos" class="botao-pedidos">
+            Ver meus pedidos <span>→</span>
+          </RouterLink>
         </div>
 
         <div class="favoritos">
@@ -564,6 +561,66 @@ onMounted(() => {
   border-radius: 4px;
   box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
   background-color: #fcf5eb;
+}
+
+.pedidos {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto 58px;
+  padding: 24px 22px;
+  box-sizing: border-box;
+  border: 1px solid #d3cec8;
+  border-radius: 4px;
+  box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
+  background-color: #fcf5eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.info-pedidos h2 {
+  margin: 0 0 12px;
+  font-family: 'Marcellus', sans-serif;
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+.info-pedidos p {
+  margin: 0;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.1rem;
+  line-height: 1.45;
+  color: #555;
+}
+
+.botao-pedidos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-width: 175px;
+  padding: 13px 17px;
+  box-sizing: border-box;
+  border: 1px solid #c40c6c;
+  border-radius: 4px;
+  background-color: #c40c6c;
+  color: white;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1rem;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.botao-pedidos:hover {
+  background-color: #a80959;
+}
+
+.botao-pedidos span {
+  font-size: 1.3rem;
 }
 
 .impacto h2 {
@@ -832,9 +889,23 @@ onMounted(() => {
     font-size: 1rem;
   }
 
-  .lista-produtos {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
+  .pedidos {
+    padding: 22px;
+    gap: 15px;
+  }
+
+  .info-pedidos h2 {
+    font-size: 1.8rem;
+  }
+
+  .info-pedidos p {
+    font-size: 1rem;
+  }
+
+  .botao-pedidos {
+    min-width: 145px;
+    padding: 11px;
+    font-size: 0.9rem;
   }
 }
 
@@ -944,9 +1015,20 @@ onMounted(() => {
     gap: 14px;
   }
 
-  .lista-produtos {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
+  .pedidos {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    gap: 18px;
+    margin-bottom: 40px;
+  }
+
+  .info-pedidos h2 {
+    font-size: 1.6rem;
+  }
+
+  .botao-pedidos {
+    width: 100%;
   }
 }
 </style>

@@ -1,11 +1,23 @@
 <script setup>
-import { computed, onMounted } from 'vue'  
+import { ref, computed, onMounted } from 'vue'  
 import ProductCard from '@/components/products/ProductCard.vue'
-import produtos from '@/data/product'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
 
+const produtos = ref([])
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
 const favoritosSalvos = JSON.parse(localStorage.getItem('favoritos') || '{}')
+
+// busca os produtos na API
+onMounted(async () => {
+  try {
+    const resposta = await fetch('http://localhost:3000/produtos')
+    produtos.value = await resposta.json()
+  } catch (erro) {
+    console.error('Erro ao buscar produtos:', erro)
+  }
+})
+
+// filtra os produtos favoritados pelo usuário
 const favoritos = computed(() => {
   if (!usuarioLogado) {
     return []
@@ -13,7 +25,9 @@ const favoritos = computed(() => {
 
   const idsFavoritos = favoritosSalvos[usuarioLogado.id] || []
 
-  return produtos.value.filter((produto) => idsFavoritos.includes(produto.id))
+  return produtos.value.filter((produto) =>
+    idsFavoritos.some((id) => String(id) === String(produto.id))
+  )
 })
 
 onMounted(() => {

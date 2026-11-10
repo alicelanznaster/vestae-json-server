@@ -1,5 +1,5 @@
 <script setup>
-import { carrinho, selecionados } from '@/utils/cartUtils'
+import { carrinho, selecionados, salvarCarrinho } from '@/utils/cartUtils'
 import { formataPreco } from '@/utils/currencyUtils'
 import { bairros } from '@/data/bairros'
 import { ref, computed } from 'vue'
@@ -61,12 +61,12 @@ function finalizarCompra() {
     return !selecionados.value.includes(item.id)
   })
 
-  localStorage.setItem('carrinho', JSON.stringify(carrinho.value))
+  salvarCarrinho()
 
   selecionados.value = []
 }
 
-function confirmarPagamento() {
+async function confirmarPagamento() {
   if (!cep.value || !rua.value || !numero.value || !bairro.value || !metodoPagamento.value) {
     alert('Preencha todos os campos obrigatórios')
     return
@@ -77,7 +77,47 @@ function confirmarPagamento() {
     return
   }
 
+  const usuario = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
+
+  const pedido = {
+    usuarioEmail: usuario.email,
+    usuarioNome: usuario.nome,
+    produtos: produtosSelecionados.value,
+    endereco: {
+      cep: cep.value,
+      rua: rua.value,
+      numero: numero.value,
+      bairro: bairro.value,
+      complemento: complemento.value,
+    },
+    metodoPagamento: metodoPagamento.value,
+    total: totalSelecionados.value,
+    data: new Date().toISOString(),
+    status: 'Pedido confirmado',
+  }
+
   carregando.value = true
+
+  const resposta = await fetch('http://localhost:3000/pedidos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(pedido),
+  })
+
+  if (!resposta.ok) {
+    alert('Não foi possível registrar seu pedido. Tente novamente.')
+    carregando.value = false
+    return
+  }
+
+  carregando.value = false
+  compraConcluida.value = true
+  mostrarCheck.value = true
+
+  finalizarCompra()
+
   cep.value = ''
   rua.value = ''
   numero.value = ''
@@ -87,15 +127,8 @@ function confirmarPagamento() {
   mostrarBairros.value = false
 
   setTimeout(() => {
-    carregando.value = false
-    compraConcluida.value = true
-    mostrarCheck.value = true
-    finalizarCompra()
-
-    setTimeout(() => {
-      mostrarCheck.value = false
-    }, 2000)
-  }, 3000)
+    mostrarCheck.value = false
+  }, 2000)
 }
 
 const totalSelecionados = computed(() => {
@@ -144,6 +177,7 @@ const produtosSelecionados = computed(() => {
         <p>Obrigada por escolher a VESTÆ.</p>
         <p>Seu pedido foi confirmado.</p>
 
+        <RouterLink to="/pedidos" class="visualizar-compra"> VISUALIZAR COMPRA </RouterLink>
         <RouterLink to="/" class="voltar-inicio"> VOLTAR PARA A PÁGINA INICIAL </RouterLink>
       </div>
 
@@ -348,9 +382,12 @@ h2 {
   margin: 8px 0;
 }
 
-.voltar-inicio {
-  display: inline-block;
-  margin-top: 25px;
+.visualizar-compra {
+  display: block;
+  width: 280px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  margin-top: 30px;
   background-color: #c00b63;
   color: white;
   text-decoration: none;
@@ -358,6 +395,17 @@ h2 {
   padding: 14px 20px;
   border-radius: 10px;
   font-size: 16px;
+  text-align: center;
+}
+
+.voltar-inicio {
+  display: block;
+  width: fit-content;
+  margin: 12px auto 0;
+  color: #c00b63;
+  text-decoration: underline;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 15px;
 }
 
 .conteudo {
