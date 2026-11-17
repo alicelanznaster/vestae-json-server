@@ -8,32 +8,21 @@ const props = defineProps({
 
 const preco = ref('')
 
-const produtosComAnuncios = computed(() => {
-  const anuncios = JSON.parse(
-    localStorage.getItem('vestae-anuncios') || '[]'
-  )
-
-  const anunciosCategoria = anuncios.filter(
-    (produto) => produto.categoria === props.produtos[0]?.categoria
-  )
-
-  return [...props.produtos, ...anunciosCategoria]
-})
-
+// filtrar os produtos pela faixa de preço
 const produtosFiltrados = computed(() => {
   if (preco.value === 'ate50') {
-    return produtosComAnuncios.value.filter((produto) => produto.preco <= 50)
+    return props.produtos.filter((produto) => produto.preco <= 50)
   }
 
   if (preco.value === 'ate100') {
-    return produtosComAnuncios.value.filter((produto) => produto.preco <= 100)
+    return props.produtos.filter((produto) => produto.preco <= 100)
   }
 
   if (preco.value === 'ate500') {
-    return produtosComAnuncios.value.filter((produto) => produto.preco <= 500)
+    return props.produtos.filter((produto) => produto.preco <= 500)
   }
 
-  return produtosComAnuncios.value
+  return props.produtos
 })
 </script>
 

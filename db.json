@@ -48,16 +48,6 @@
       "termos": true,
       "tipoPerfil": "comprador",
       "id": "E-KGSbENCQ4",
-      "modoAtivo": "vendedor"
-    },
-    {
-      "nome": "Sofia ",
-      "email": "smartinsdebon@gmail.com",
-      "telefone": "(47) 99625-9734",
-      "senha": "12112009s",
-      "termos": true,
-      "tipoPerfil": "comprador",
-      "id": "2ExHth52h0M",
       "modoAtivo": "comprador"
     }
   ],

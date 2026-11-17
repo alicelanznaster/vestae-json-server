@@ -9,7 +9,11 @@ import UploadImg from '../formulario/UploadImg.vue'
 const route = useRoute()
 const router = useRouter()
 
-const produtos = ref([])
+const API_URL = import.meta.env.DEV
+  ? 'http://localhost:3000'
+  : 'https://hotel-pets-2info2.onrender.com'
+
+const produto = ref(null)
 const carregando = ref(true)
 
 const editando = ref(false)
@@ -24,23 +28,23 @@ const statusEditado = ref('')
 const precoEditado = ref('')
 const imagemEditada = ref('')
 
-// busca os produtos na API
-onMounted(async () => {
-  try {
-    const resposta = await fetch(
-  `http://localhost:3000/produtos/${route.params.id}`
-)
-    if (!resposta.ok) {
-    throw new Error('Produto não encontrado.')
-}
-    const produtoEncontrado = await resposta.json()
-produtos.value = [produtoEncontrado]
-  } catch (erro) {
-    console.error('Erro ao buscar produtos:', erro)
-  } finally {
+// buscar o produto pelo ID
+async function carregarProduto() {
+  const id = route.params.id
+
+  const resposta = await fetch(`${API_URL}/produtos/${id}`)
+
+  if (!resposta.ok) {
+    produto.value = null
     carregando.value = false
+    return
   }
-})
+
+  produto.value = await resposta.json()
+  carregando.value = false
+}
+
+onMounted(carregarProduto)
 
 const voltarPagina = () => {
   if (window.history.state && window.history.state.back) {
@@ -50,22 +54,7 @@ const voltarPagina = () => {
   }
 }
 
-// procura primeiro na API e depois nos anúncios do usuário
-const produto = computed(() => {
-  const produtoApi = produtos.value.find(
-  (p) => String(p.id) === String(route.params.id)
-  )
-
-  if (produtoApi) {
-    return produtoApi
-  }
-
-  const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
-
-  return anuncios.find((p) => p.id === Number(route.params.id))
-})
-
-// verifica se o produto pertence ao usuário logado
+// verificar se o produto pertence ao usuário logado
 const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
 
 const meuProduto = computed(() => {
@@ -86,9 +75,11 @@ function editarAnuncio() {
   statusEditado.value = produto.value.status
   precoEditado.value = produto.value.preco
   imagemEditada.value = produto.value.imagem
+
   editando.value = true
 }
 
+// atualizar o anúncio
 async function salvarAlteracoes() {
   const produtoAtualizado = {
     ...produto.value,
@@ -103,36 +94,26 @@ async function salvarAlteracoes() {
     imagem: imagemEditada.value,
   }
 
-  try {
-    const resposta = await fetch(
-      `http://localhost:3000/produtos/${route.params.id}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(produtoAtualizado),
-      }
-    )
+  const resposta = await fetch(`${API_URL}/produtos/${route.params.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(produtoAtualizado),
+  })
 
-    if (!resposta.ok) {
-      throw new Error('Erro ao atualizar anúncio.')
-    }
-
-    const produtoSalvo = await resposta.json()
-
-    produtos.value = produtos.value.map((p) =>
-      String(p.id) === String(produtoSalvo.id) ? produtoSalvo : p
-    )
-
-    editando.value = false
-    alert('Anúncio atualizado com sucesso!')
-  } catch (erro) {
-    console.error('Erro ao atualizar anúncio:', erro)
-    alert('Não foi possível atualizar o anúncio. Tente novamente.')
+  if (!resposta.ok) {
+    alert('Não foi possível atualizar o anúncio.')
+    return
   }
+
+  produto.value = await resposta.json()
+
+  editando.value = false
+  alert('Anúncio atualizado com sucesso!')
 }
 
+// excluir o anúncio
 async function excluirAnuncio() {
   const confirmar = confirm('Tem certeza que deseja excluir este anúncio?')
 
@@ -140,24 +121,17 @@ async function excluirAnuncio() {
     return
   }
 
-  try {
-    const resposta = await fetch(
-      `http://localhost:3000/produtos/${route.params.id}`,
-      {
-        method: 'DELETE',
-      }
-    )
+  const resposta = await fetch(`${API_URL}/produtos/${route.params.id}`, {
+    method: 'DELETE',
+  })
 
-    if (!resposta.ok) {
-      throw new Error('Erro ao excluir anúncio.')
-    }
-
-    alert('Anúncio excluído com sucesso!')
-    router.push('/perfil')
-  } catch (erro) {
-    console.error('Erro ao excluir anúncio:', erro)
-    alert('Não foi possível excluir o anúncio. Tente novamente.')
+  if (!resposta.ok) {
+    alert('Não foi possível excluir o anúncio.')
+    return
   }
+
+  alert('Anúncio excluído com sucesso!')
+  router.push('/perfil')
 }
 </script>
 

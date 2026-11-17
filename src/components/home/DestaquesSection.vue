@@ -8,17 +8,13 @@ import ProductCard from '@/components/products/ProductCard.vue'
 
 const produtos = ref([])
 
-// busca os produtos na API
+// buscar os produtos na API
 onMounted(async () => {
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    produtos.value = await resposta.json()
-  } catch (erro) {
-    console.error('Erro ao buscar produtos:', erro)
-  }
+  const resposta = await fetch('http://localhost:3000/produtos')
+  produtos.value = await resposta.json()
 })
 
-// filtra apenas os produtos em destaque
+// filtrar apenas os produtos em destaque
 const produtosDestaque = computed(() => {
   return produtos.value.filter((produto) => produto.destaque)
 })

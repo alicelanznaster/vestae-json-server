@@ -1,18 +1,20 @@
 <script setup>
 import { formataPreco } from '@/utils/currencyUtils'
-import { favoritarProduto } from '@/utils/favoritesUtils';
-import { RouterLink } from 'vue-router';
+import { favoritarProduto } from '@/utils/favoritesUtils'
+import { RouterLink } from 'vue-router'
 
+// receber os dados do produto
 const props = defineProps({
-    produto: Object,
-    mostrarFavorito: {
-        type: Boolean,
-        default: true
-    }
+  produto: Object,
+  mostrarFavorito: {
+    type: Boolean,
+    default: true
+  }
 })
 
+// favoritar o produto
 function favoritar() {
-    favoritarProduto(props.produto)
+  favoritarProduto(props.produto)
 }
 </script>
 

@@ -4,15 +4,13 @@ import FiltroPreco from '@/components/products/FiltroPreco.vue'
 
 const produtos = ref([])
 
+// buscar os produtos na API
 onMounted(async () => {
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    produtos.value = await resposta.json()
-  } catch (erro) {
-    console.error('Erro ao buscar produtos:', erro)
-  }
+  const resposta = await fetch('http://localhost:3000/produtos')
+  produtos.value = await resposta.json()
 })
 
+// filtrar só produtos femininos
 const feminino = computed(() => {
   return produtos.value.filter(
     (produto) => produto.categoria === 'Feminino'
@@ -23,7 +21,7 @@ const feminino = computed(() => {
 <template>
   <div class="pagina">
     <h1>Feminino</h1>
-    
+
     <div class="filtro-preco">
       <FiltroPreco :produtos="feminino" />
     </div>
