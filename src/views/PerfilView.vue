@@ -3,6 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
 import ProductCard from '@/components/products/ProductCard.vue'
 import { carregarFavoritos } from '@/utils/favoritesUtils'
+import { carregarModo, trocarModo } from '@/utils/modoUtils'
+import { formataPreco } from '@/utils/currencyUtils'
 
 const router = useRouter()
 const usuario = ref(null)
@@ -14,6 +16,8 @@ const novoNome = ref('')
 
 const modoAtivo = ref('comprador')
 const produtosFavoritos = ref([])
+const produtosPedidos = ref([])
+const compradores = ref([])
 const API_URL = 'http://localhost:3000'
 
 // pega o usuário que ta logado
@@ -70,45 +74,26 @@ async function salvarNome() {
 }
 
 // pega o modo ativo do usuário no JSON Server
-async function carregarModo() {
-  if (!usuario.value) return
+async function atualizarModo() {
+  const usuarioAtualizado = await carregarModo(usuario.value)
 
-  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`)
-
-  if (resposta.ok) {
-    const usuarioAtualizado = await resposta.json()
-
-    modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
+  if (usuarioAtualizado) {
     usuario.value = usuarioAtualizado
-    localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
+    modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
   }
 }
 
-// troca o modo ativo do usuário
-async function trocarModo(modo) {
-  const resposta = await fetch(`${API_URL}/usuarios/${usuario.value.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      modoAtivo: modo,
-    }),
-  })
+async function alterarModo(modo) {
+  const usuarioAtualizado = await trocarModo(usuario.value, modo)
 
-  if (!resposta.ok) {
+  if (!usuarioAtualizado) {
     alert('Erro ao trocar o modo!')
     return
   }
 
-  const usuarioAtualizado = await resposta.json()
-
   usuario.value = usuarioAtualizado
   modoAtivo.value = usuarioAtualizado.modoAtivo
-  localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
 }
-
-// pega os produtos salvos no localStorage
 
 async function carregarProdutos() {
   if (!usuario.value) {
@@ -125,11 +110,65 @@ async function carregarProdutos() {
 
     const todosProdutos = await resposta.json()
 
-    produtos.value = todosProdutos.filter(
-      (produto) => produto.email === usuario.value.email
-    )
+    produtos.value = todosProdutos.filter((produto) => produto.email === usuario.value.email)
   } catch (erro) {
     console.error('Erro ao carregar produtos:', erro)
+  }
+}
+
+// carrega os produtos dos pedidos do usuário
+async function carregarProdutosPedidos() {
+  if (!usuario.value) return
+
+  const resposta = await fetch(`${API_URL}/pedidos`)
+  const pedidos = await resposta.json()
+
+  produtosPedidos.value = []
+
+  for (let i = 0; i < pedidos.length; i++) {
+    if (pedidos[i].usuarioEmail === usuario.value.email) {
+      for (let j = 0; j < pedidos[i].produtos.length; j++) {
+        produtosPedidos.value.push(pedidos[i].produtos[j])
+      }
+    }
+  }
+}
+
+// carrega quem comprou os produtos do vendedor
+async function carregarCompradores() {
+  if (!usuario.value) return
+
+  const resposta = await fetch(`${API_URL}/pedidos`)
+  const pedidos = await resposta.json()
+
+  compradores.value = []
+
+  for (let i = 0; i < pedidos.length; i++) {
+    for (let j = 0; j < pedidos[i].produtos.length; j++) {
+      const produto = pedidos[i].produtos[j]
+
+      if (produto.email === usuario.value.email) {
+        let comprador = null
+
+        for (let k = 0; k < compradores.value.length; k++) {
+          if (compradores.value[k].email === pedidos[i].usuarioEmail) {
+            comprador = compradores.value[k]
+          }
+        }
+
+        if (comprador) {
+          comprador.quantidade++
+          comprador.total += produto.preco
+        } else {
+          compradores.value.push({
+            email: pedidos[i].usuarioEmail,
+            nome: pedidos[i].usuarioNome,
+            quantidade: 1,
+            total: produto.preco,
+          })
+        }
+      }
+    }
   }
 }
 
@@ -146,7 +185,6 @@ async function carregarFavoritosPerfil() {
 
     const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
     const favoritosUsuario = favoritos[usuario.value.id] || []
-
     produtosFavoritos.value = []
 
     for (let i = 0; i < todosProdutos.length; i++) {
@@ -198,8 +236,10 @@ function selecionarFoto(evento) {
 // carrega os dados do perfil quando a página abre
 onMounted(() => {
   carregarUsuario()
-  carregarModo()
+  atualizarModo()
   carregarProdutos()
+  carregarProdutosPedidos()
+  carregarCompradores()
   carregarFavoritosPerfil()
   carregarFavoritos()
   carregarFoto()
@@ -267,7 +307,7 @@ onMounted(() => {
           <button
             type="button"
             :class="{ ativo: modoAtivo === 'comprador' }"
-            @click="trocarModo('comprador')"
+            @click="alterarModo('comprador')"
           >
             Comprar
           </button>
@@ -275,7 +315,7 @@ onMounted(() => {
           <button
             type="button"
             :class="{ ativo: modoAtivo === 'vendedor' }"
-            @click="trocarModo('vendedor')"
+            @click="alterarModo('vendedor')"
           >
             Vender
           </button>
@@ -310,17 +350,52 @@ onMounted(() => {
       <section v-if="modoAtivo === 'vendedor'" class="produtos">
         <h2>Meus produtos</h2>
 
-      <div v-if="produtos.length > 0" class="lista-produtos">
-        <ProductCard
-          v-for="produto in produtos"
-          :key="produto.id"
-          :produto="produto"
-        />
-      </div>
+        <div v-if="produtos.length > 0" class="lista-produtos">
+          <ProductCard v-for="produto in produtos" :key="produto.id" :produto="produto" />
+        </div>
 
-      <div v-else class="pedidos-vazios">
-        <p>Você ainda não anunciou nenhum produto.</p>
-      </div>
+        <div v-else class="pedidos-vazios">
+          <p>Você ainda não anunciou nenhum produto.</p>
+          <RouterLink :to="'/anunciar'" class="anunciar"> Anunciar agora </RouterLink>
+        </div>
+      </section>
+
+      <section v-if="modoAtivo === 'vendedor'" class="compradores">
+        <h2>Meus compradores</h2>
+
+        <div v-if="compradores.length > 0" class="lista-compradores">
+          <div v-for="comprador in compradores" :key="comprador.email" class="item-comprador">
+            <div class="dados-comprador">
+              <div class="avatar-comprador">
+                <img src="/icons/user-circle.svg" alt="Usuário" />
+              </div>
+
+              <div>
+                <h3>{{ comprador.nome }}</h3>
+                <p>Compradora</p>
+              </div>
+            </div>
+
+            <div class="informacoes-comprador">
+              <div>
+                <span>Peças compradas</span>
+                <strong>
+                  {{ comprador.quantidade }}
+                  {{ comprador.quantidade === 1 ? 'peça' : 'peças' }}
+                </strong>
+              </div>
+
+              <div>
+                <span>Valor total</span>
+                <strong>{{ formataPreco(comprador.total) }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="pedidos-vazios">
+          <p>Você ainda não vendeu nenhuma peça.</p>
+        </div>
       </section>
 
       <section v-if="modoAtivo === 'comprador'" class="comprador">
@@ -328,6 +403,14 @@ onMounted(() => {
           <div class="info-pedidos">
             <h2>Meus Pedidos</h2>
             <p>Acompanhe suas compras, consulte os detalhes e veja o andamento dos seus pedidos.</p>
+            <div class="lista-pedidos">
+              <ProductCard
+                v-for="produto in produtosPedidos"
+                :key="produto.id"
+                :produto="produto"
+                :mostrarFavorito="false"
+              />
+            </div>
           </div>
 
           <RouterLink to="/pedidos" class="botao-pedidos">
@@ -583,7 +666,7 @@ onMounted(() => {
 .impacto {
   width: 100%;
   max-width: 640px;
-  margin: 0 auto 58px;
+  margin-bottom: 60px;
   padding: 24px 22px;
   box-sizing: border-box;
   border: 1px solid #d3cec8;
@@ -602,26 +685,45 @@ onMounted(() => {
   border-radius: 4px;
   box-shadow: 2px 3px 4px rgba(0, 0, 0, 0.12);
   background-color: #fcf5eb;
-
-  display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
 }
 
 .info-pedidos h2 {
-  margin: 0 0 12px;
   font-family: 'Marcellus', sans-serif;
   font-size: 2rem;
   font-weight: 400;
 }
 
 .info-pedidos p {
-  margin: 0;
+  margin-bottom: 15px;
   font-family: 'Google Sans Flex', sans-serif;
   font-size: 1.1rem;
-  line-height: 1.45;
+  line-height: 1.25;
   color: #555;
+}
+
+.lista-pedidos {
+  display: flex;
+  gap: 15px;
+  pointer-events: none;
+}
+
+.lista-pedidos .card {
+  width: 160px;
+}
+
+.lista-pedidos :deep(h3) {
+  font-size: 14px;
+}
+
+.lista-pedidos :deep(.preco) {
+  font-size: 16px;
+}
+
+.lista-pedidos :deep(.card:hover) {
+  transform: none;
 }
 
 .botao-pedidos {
@@ -630,14 +732,13 @@ onMounted(() => {
   justify-content: center;
   gap: 12px;
   min-width: 175px;
-  padding: 13px 17px;
+  padding: 10px 17px;
   box-sizing: border-box;
   border: 1px solid #c40c6c;
   border-radius: 4px;
   background-color: #c40c6c;
   color: white;
   font-family: 'Google Sans Flex', sans-serif;
-  font-size: 1rem;
   text-decoration: none;
   transition:
     background-color 0.2s ease,
@@ -686,26 +787,22 @@ onMounted(() => {
 }
 
 .produtos h2 {
-  margin: 0 0 38px 8px;
+  margin: 0 0 30px 8px;
   font-family: 'Marcellus', sans-serif;
   font-size: 2.4rem;
   font-weight: 400;
 }
 
-.grid {
+.lista-produtos {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 19px;
+  gap: 20px;
+  width: 100%;
 }
 
-.vazio {
-  font-family: 'Google Sans Flex', sans-serif;
-  text-align: center;
-}
-
-.vazio .texto-vazio {
-  color: #555;
-  font-size: 1.4rem;
+.lista-produtos :deep(.card) {
+  width: 100%;
+  min-width: 0;
 }
 
 .comprador h2 {
@@ -716,6 +813,8 @@ onMounted(() => {
 }
 
 .pedidos-vazios {
+  display: flex;
+  gap: 10px;
   padding: 30px 20px;
   margin-bottom: 55px;
   border: 1px solid #d3cec8;
@@ -725,22 +824,108 @@ onMounted(() => {
   font-family: 'Google Sans Flex', sans-serif;
   font-size: 1.2rem;
   color: #555;
+  max-width: 640px;
+}
+
+.anunciar {
+  color: #a80959;
 }
 
 .favoritos h2 {
   margin-bottom: 30px;
 }
 
-.lista-produtos {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 19px;
+.compradores {
+  width: 100%;
+  max-width: 640px;
 }
 
-.vazio .botao-anunciar {
-  color: #c40c6c;
-  font-size: 1.25rem;
-  text-decoration: underline;
+.compradores h2 {
+  margin-bottom: 30px;
+  font-family: 'Marcellus', sans-serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+}
+
+.lista-compradores {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.item-comprador {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid #d3cec8;
+  border-radius: 5px;
+  background-color: #fcf5eb;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.dados-comprador {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #e5ded5;
+}
+
+.avatar-comprador {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #f1e4d3;
+}
+
+.avatar-comprador img {
+  width: 32px;
+  height: 32px;
+}
+
+.dados-comprador h3 {
+  margin: 0;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dados-comprador p {
+  margin: 0;
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 0.95rem;
+  color: #777;
+}
+
+.informacoes-comprador {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.informacoes-comprador div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
+
+.informacoes-comprador span {
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1rem;
+  color: #555;
+}
+
+.informacoes-comprador strong {
+  font-family: 'Google Sans Flex', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
 @media (max-width: 1024px) {
@@ -807,18 +992,6 @@ onMounted(() => {
 
   .produtos h2 {
     font-size: 2rem;
-  }
-
-  .grid {
-    gap: 17px;
-  }
-
-  .vazio .texto-vazio {
-    font-size: 1.1rem;
-  }
-
-  .vazio .botao-anunciar {
-    font-size: 1.1rem;
   }
 
   .lista-produtos {
@@ -903,19 +1076,6 @@ onMounted(() => {
     margin-left: 5px;
     margin-bottom: 32px;
     font-size: 1.9rem;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-  }
-
-  .vazio .texto-vazio {
-    font-size: 1rem;
-  }
-
-  .vazio .botao-anunciar {
-    font-size: 1rem;
   }
 
   .pedidos {
@@ -1037,11 +1197,6 @@ onMounted(() => {
     margin-left: 3px;
     margin-bottom: 26px;
     font-size: 1.7rem;
-  }
-
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 14px;
   }
 
   .pedidos {
