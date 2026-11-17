@@ -351,7 +351,12 @@ onMounted(() => {
         <h2>Meus produtos</h2>
 
         <div v-if="produtos.length > 0" class="lista-produtos">
-          <ProductCard v-for="produto in produtos" :key="produto.id" :produto="produto" />
+          <ProductCard
+            v-for="produto in produtos"
+            :key="produto.id"
+            :produto="produto"
+            :mostrarFavorito="false"
+          />
         </div>
 
         <div v-else class="pedidos-vazios">
