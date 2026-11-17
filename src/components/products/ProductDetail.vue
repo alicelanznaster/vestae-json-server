@@ -27,8 +27,14 @@ const imagemEditada = ref('')
 // busca os produtos na API
 onMounted(async () => {
   try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    produtos.value = await resposta.json()
+    const resposta = await fetch(
+  `http://localhost:3000/produtos/${route.params.id}`
+)
+    if (!resposta.ok) {
+    throw new Error('Produto não encontrado.')
+}
+    const produtoEncontrado = await resposta.json()
+produtos.value = [produtoEncontrado]
   } catch (erro) {
     console.error('Erro ao buscar produtos:', erro)
   } finally {
