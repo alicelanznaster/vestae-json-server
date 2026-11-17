@@ -83,51 +83,74 @@ function editarAnuncio() {
   editando.value = true
 }
 
-function salvarAlteracoes() {
-  const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
-  const anuncio = anuncios.find((p) => p.id === Number(route.params.id))
+async function salvarAlteracoes() {
+  const produtoAtualizado = {
+    ...produto.value,
+    titulo: tituloEditado.value.trim(),
+    descricao: descricaoEditada.value.trim(),
+    condicao: condicaoEditada.value,
+    categoria: categoriaEditada.value,
+    marca: marcaEditada.value.trim(),
+    tamanho: tamanhoEditado.value.trim(),
+    status: statusEditado.value,
+    preco: Number(precoEditado.value),
+    imagem: imagemEditada.value,
+  }
 
-  anuncio.titulo = tituloEditado.value.trim()
-  anuncio.descricao = descricaoEditada.value.trim()
-  anuncio.condicao = condicaoEditada.value
-  anuncio.categoria = categoriaEditada.value
-  anuncio.marca = marcaEditada.value.trim()
-  anuncio.tamanho = tamanhoEditado.value.trim()
-  anuncio.status = statusEditado.value
-  anuncio.preco = Number(precoEditado.value)
-  anuncio.imagem = imagemEditada.value
+  try {
+    const resposta = await fetch(
+      `http://localhost:3000/produtos/${route.params.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(produtoAtualizado),
+      }
+    )
 
-  localStorage.setItem('vestae-anuncios', JSON.stringify(anuncios))
-  editando.value = false
-  alert('Anúncio atualizado com sucesso!')
+    if (!resposta.ok) {
+      throw new Error('Erro ao atualizar anúncio.')
+    }
+
+    const produtoSalvo = await resposta.json()
+
+    produtos.value = produtos.value.map((p) =>
+      String(p.id) === String(produtoSalvo.id) ? produtoSalvo : p
+    )
+
+    editando.value = false
+    alert('Anúncio atualizado com sucesso!')
+  } catch (erro) {
+    console.error('Erro ao atualizar anúncio:', erro)
+    alert('Não foi possível atualizar o anúncio. Tente novamente.')
+  }
 }
 
-function excluirAnuncio() {
+async function excluirAnuncio() {
   const confirmar = confirm('Tem certeza que deseja excluir este anúncio?')
 
   if (!confirmar) {
     return
   }
 
-  const anuncios = JSON.parse(localStorage.getItem('vestae-anuncios') || '[]')
-  const novosAnuncios = anuncios.filter((p) => p.id !== Number(route.params.id))
-  localStorage.setItem('vestae-anuncios', JSON.stringify(novosAnuncios))
+  try {
+    const resposta = await fetch(
+      `http://localhost:3000/produtos/${route.params.id}`,
+      {
+        method: 'DELETE',
+      }
+    )
 
-  alert('Anúncio excluído com sucesso!')
-  router.push('/perfil')
-}
+    if (!resposta.ok) {
+      throw new Error('Erro ao excluir anúncio.')
+    }
 
-function alterarImagem(dados) {
-  imagemEditada.value = dados.preview
-}
-
-function limitarPreco() {
-  if (precoEditado.value > 1000) {
-    precoEditado.value = 1000
-  }
-
-  if (precoEditado.value < 0) {
-    precoEditado.value = 0
+    alert('Anúncio excluído com sucesso!')
+    router.push('/perfil')
+  } catch (erro) {
+    console.error('Erro ao excluir anúncio:', erro)
+    alert('Não foi possível excluir o anúncio. Tente novamente.')
   }
 }
 </script>

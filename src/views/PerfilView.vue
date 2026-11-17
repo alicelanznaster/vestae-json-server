@@ -109,15 +109,28 @@ async function trocarModo(modo) {
 }
 
 // pega os produtos salvos no localStorage
-async function carregarProdutos() {
-  const anunciosSalvos = JSON.parse(localStorage.getItem('vestae-anuncios')) || []
 
+async function carregarProdutos() {
   if (!usuario.value) {
     produtos.value = []
     return
   }
 
-  produtos.value = anunciosSalvos.filter((produto) => produto.email === usuario.value.email)
+  try {
+    const resposta = await fetch(`${API_URL}/produtos`)
+
+    if (!resposta.ok) {
+      throw new Error('Erro ao buscar produtos.')
+    }
+
+    const todosProdutos = await resposta.json()
+
+    produtos.value = todosProdutos.filter(
+      (produto) => produto.email === usuario.value.email
+    )
+  } catch (erro) {
+    console.error('Erro ao carregar produtos:', erro)
+  }
 }
 
 // carrega os produtos favoritos do usuário
@@ -292,6 +305,22 @@ onMounted(() => {
           Comece a anunciar suas peças e ajude roupas a continuarem circulando em vez de serem
           descartadas.
         </p>
+      </section>
+
+      <section v-if="modoAtivo === 'vendedor'" class="produtos">
+        <h2>Meus produtos</h2>
+
+      <div v-if="produtos.length > 0" class="lista-produtos">
+        <ProductCard
+          v-for="produto in produtos"
+          :key="produto.id"
+          :produto="produto"
+        />
+      </div>
+
+      <div v-else class="pedidos-vazios">
+        <p>Você ainda não anunciou nenhum produto.</p>
+      </div>
       </section>
 
       <section v-if="modoAtivo === 'comprador'" class="comprador">
