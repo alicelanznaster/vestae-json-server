@@ -3,6 +3,7 @@ import { formataPreco } from '@/utils/currencyUtils'
 import { favoritarProduto } from '@/utils/favoritesUtils'
 import { RouterLink } from 'vue-router'
 
+// receber os dados do produto
 const props = defineProps({
   produto: Object,
   mostrarFavorito: {
@@ -11,6 +12,7 @@ const props = defineProps({
   },
 })
 
+// favoritar o produto
 function favoritar() {
   favoritarProduto(props.produto)
 }

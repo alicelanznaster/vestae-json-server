@@ -52,34 +52,30 @@ function salvarCarrinho() {
 carregarCarrinho()
 
 async function addCarrinho(idItem) {
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    const produtos = await resposta.json()
+  const resposta = await fetch('http://localhost:3000/produtos')
+  const produtos = await resposta.json()
 
-    const item = produtos.find(
-      (p) => String(p.id) === String(idItem)
+  const item = produtos.find(
+    (p) => String(p.id) === String(idItem)
+  )
+
+  if (item) {
+    ultimoProdAdd.value = item.titulo
+
+    const itemExistente = carrinho.value.find(
+      (produto) => String(produto.id) === String(idItem)
     )
 
-    if (item) {
-      ultimoProdAdd.value = item.titulo
-
-      const itemExistente = carrinho.value.find(
-        (produto) => String(produto.id) === String(idItem)
-      )
-
-      if (!itemExistente) {
-        carrinho.value.push(item)
-      }
-
-      salvarCarrinho()
-      mostrarAviso.value = true
-
-      setTimeout(() => {
-        mostrarAviso.value = false
-      }, 2000)
+    if (!itemExistente) {
+      carrinho.value.push(item)
     }
-  } catch (erro) {
-    console.error('Erro ao adicionar produto ao carrinho:', erro)
+
+    salvarCarrinho()
+    mostrarAviso.value = true
+
+    setTimeout(() => {
+      mostrarAviso.value = false
+    }, 2000)
   }
 }
 
