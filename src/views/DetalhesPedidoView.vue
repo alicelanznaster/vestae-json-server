@@ -9,7 +9,7 @@ const router = useRouter()
 
 const pedido = ref(null)
 const carregando = ref(false)
-
+const erro = ref('')
 const editandoEndereco = ref(false)
 const enderecoEditado = ref({
   cep: '',
@@ -21,7 +21,7 @@ const enderecoEditado = ref({
 
 async function carregarPedido() {
   carregando.value = true
-  const erro = ref('')
+  erro.value = ''
 
   const idPedido = route.params.id
   const resposta = await fetch(`${API_URL}/pedidos/${idPedido}`)
