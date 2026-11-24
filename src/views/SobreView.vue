@@ -44,11 +44,6 @@
           <img src="/sobre/sofia.png" alt="Sofia" />
           <p>Sofia</p>
         </div>
-
-        <div class="membro">
-          <img src="/sobre/otavio.png" alt="Otávio" />
-          <p>Otávio</p>
-        </div>
       </div>
     </section>
   </main>
@@ -92,11 +87,10 @@ hr {
 }
 
 .membros {
-  gap: 35px;
   margin-top: 35px;
   cursor: default;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
 }
 
 .membro {
