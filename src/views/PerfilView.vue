@@ -21,13 +21,16 @@ const compradores = ref([])
 const API_URL = 'http://localhost:3000'
 
 // pega o usuário que ta logado
-function carregarUsuario() {
+async function carregarUsuario() {
   const salvo = localStorage.getItem('usuarioLogado')
 
   if (salvo) {
-    usuario.value = JSON.parse(salvo)
-  } else {
-    usuario.value = null
+    const usuarioSalvo = JSON.parse(salvo) //pega o usuario salvo para descobrir quem está logado
+    
+    const resposta = await fetch(`${API_URL}/usuarios/${usuarioSalvo.id}`)
+    usuario.value = await resposta.json()
+
+    localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
   }
 }
 
@@ -66,53 +69,46 @@ async function salvarNome() {
     return
   }
 
-  const usuarioAtualizado = await resposta.json()
-
-  usuario.value = usuarioAtualizado
-  localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value))
+  usuario.value = await resposta.json()
+  localStorage.setItem('usuarioLogado', JSON.stringify(usuario.value)) //atualiza o localStorage com o nome que foi salvo no JSON Server
   editandoNome.value = false
 }
 
 // pega o modo ativo do usuário no JSON Server
 async function atualizarModo() {
+  if (!usuario.value) return
+
   const usuarioAtualizado = await carregarModo(usuario.value)
 
   if (usuarioAtualizado) {
     usuario.value = usuarioAtualizado
-    modoAtivo.value = usuarioAtualizado.modoAtivo || usuarioAtualizado.tipoPerfil
+    modoAtivo.value = usuarioAtualizado.modoAtivo
   }
 }
 
 async function alterarModo(modo) {
   const usuarioAtualizado = await trocarModo(usuario.value, modo)
 
-  if (!usuarioAtualizado) {
+  if (usuarioAtualizado) {
+    usuario.value = usuarioAtualizado
+    modoAtivo.value = usuarioAtualizado.modoAtivo
+  } else {
     alert('Erro ao trocar o modo!')
-    return
   }
-
-  usuario.value = usuarioAtualizado
-  modoAtivo.value = usuarioAtualizado.modoAtivo
 }
 
 async function carregarProdutos() {
-  if (!usuario.value) {
-    produtos.value = []
-    return
-  }
+  if (!usuario.value) return
 
-  try {
-    const resposta = await fetch(`${API_URL}/produtos`)
+  const resposta = await fetch(`${API_URL}/produtos`)
+  const todosProdutos = await resposta.json() 
 
-    if (!resposta.ok) {
-      throw new Error('Erro ao buscar produtos.')
+  produtos.value = []
+
+  for (const produto of todosProdutos) {
+    if (produto.email === usuario.value.email) {
+      produtos.value.push(produto)
     }
-
-    const todosProdutos = await resposta.json()
-
-    produtos.value = todosProdutos.filter((produto) => produto.email === usuario.value.email)
-  } catch (erro) {
-    console.error('Erro ao carregar produtos:', erro)
   }
 }
 
@@ -125,11 +121,11 @@ async function carregarProdutosPedidos() {
 
   produtosPedidos.value = []
 
-  for (let i = 0; i < pedidos.length; i++) {
-    if (pedidos[i].usuarioEmail === usuario.value.email) {
-      for (let j = 0; j < pedidos[i].produtos.length; j++) {
-        produtosPedidos.value.push(pedidos[i].produtos[j])
-      }
+  for (const pedido of pedidos) {
+    if (pedido.usuarioEmail === usuario.value.email) {
+      for (const produto of pedido.produtos) {
+        produtosPedidos.value.push(produto)
+      } // percorre os produtos do pedido e adiciona cada um à lista de produtos comprados
     }
   }
 }
@@ -143,17 +139,15 @@ async function carregarCompradores() {
 
   compradores.value = []
 
-  for (let i = 0; i < pedidos.length; i++) {
-    for (let j = 0; j < pedidos[i].produtos.length; j++) {
-      const produto = pedidos[i].produtos[j]
-
+  for (const pedido of pedidos) {
+    for (const produto of pedido.produtos) {
       if (produto.email === usuario.value.email) {
-        let comprador = null
+        let comprador = null //para guardar o comprador, caso ele já esteja na lista
 
-        for (let k = 0; k < compradores.value.length; k++) {
-          if (compradores.value[k].email === pedidos[i].usuarioEmail) {
-            comprador = compradores.value[k]
-          }
+        for (const pessoa of compradores.value) {
+          if (pessoa.email === pedido.usuarioEmail) {
+            comprador = pessoa
+          } //verifica se um comprador já apareceu antes
         }
 
         if (comprador) {
@@ -161,8 +155,8 @@ async function carregarCompradores() {
           comprador.total += produto.preco
         } else {
           compradores.value.push({
-            email: pedidos[i].usuarioEmail,
-            nome: pedidos[i].usuarioNome,
+            email: pedido.usuarioEmail,
+            nome: pedido.usuarioNome,
             quantidade: 1,
             total: produto.preco,
           })
@@ -174,37 +168,35 @@ async function carregarCompradores() {
 
 // carrega os produtos favoritos do usuário
 async function carregarFavoritosPerfil() {
-  if (!usuario.value) {
-    produtosFavoritos.value = []
-    return
-  }
+   if (!usuario.value) return
 
-  try {
-    const resposta = await fetch(`${API_URL}/produtos`)
-    const todosProdutos = await resposta.json()
+  const resposta = await fetch(`${API_URL}/produtos`)
+  const todosProdutos = await resposta.json()
 
-    const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
-    const favoritosUsuario = favoritos[usuario.value.id] || []
-    produtosFavoritos.value = []
+  const favoritos = JSON.parse(localStorage.getItem('favoritos')) || {}
+  const favoritosUsuario = favoritos[usuario.value.id] || []
 
-    for (let i = 0; i < todosProdutos.length; i++) {
-      for (let j = 0; j < favoritosUsuario.length; j++) {
-        if (String(todosProdutos[i].id) === String(favoritosUsuario[j])) {
-          todosProdutos[i].favorito = true
-          produtosFavoritos.value.push(todosProdutos[i])
-        }
+  produtosFavoritos.value = []
+
+  for (const favorito of favoritosUsuario) {
+    for (const produto of todosProdutos) {
+      if (String(produto.id) === String(favorito)) {
+        produto.favorito = true
+        produtosFavoritos.value.push(produto)
       }
     }
-  } catch (erro) {
-    console.error('Erro ao carregar favoritos do perfil:', erro)
-  }
+  } 
 }
 
 // pega a foto de perfil salva
 function carregarFoto() {
   if (!usuario.value) return
+
   const salva = localStorage.getItem(`vestae-foto-${usuario.value.email}`)
-  if (salva) fotoPerfil.value = salva
+
+  if (salva) {
+    fotoPerfil.value = salva
+  }
 }
 
 // pega a inicial do nome do usuário
