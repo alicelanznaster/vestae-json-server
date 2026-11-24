@@ -1,11 +1,26 @@
 <script setup>
 import { RouterLink, useRouter } from 'vue-router'
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { verificarModoVendedor } from '@/utils/modoUtils'
 
 const emit = defineEmits(['abrir-sacola'])
 const busca = ref('')
 const menuAberto = ref(false)
 const router = useRouter()
+const mostrarTopBar = ref(false)
+
+function carregarModo() {
+  mostrarTopBar.value = verificarModoVendedor()
+}
+
+onMounted(() => {
+  carregarModo()
+  window.addEventListener('modoAlterado', carregarModo)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('modoAlterado', carregarModo)
+})
 
 watch(busca, (valor) => {
   router.push({
@@ -34,7 +49,7 @@ function abrirPerfil() {
 <template>
   <header>
     <!-- topBar -->
-    <div class="top-bar">
+    <div v-if="mostrarTopBar" class="top-bar">
       <p>
         Dê um novo destino às suas roupas |
         <RouterLink to="/anunciar" class="top-link-vender"> Quero vender </RouterLink>
@@ -58,7 +73,7 @@ function abrirPerfil() {
       </div>
 
       <nav class="acoes">
-        <RouterLink to="/anunciar" class="link-vender">Quero vender</RouterLink>
+        <RouterLink v-if="mostrarTopBar" to="/anunciar" class="link-vender">Quero vender</RouterLink>
         <button class="icones" @click="abrirPerfil">
           <img src="/icons/perfil.svg" alt="Perfil" class="icone-perfil" />
         </button>
