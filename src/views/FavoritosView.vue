@@ -1,23 +1,24 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'  
+import { ref, computed, onMounted } from 'vue'
 import ProductCard from '@/components/products/ProductCard.vue'
-import { carregarFavoritos } from '@/utils/favoritesUtils'
 
 const produtos = ref([])
-const usuarioLogado = JSON.parse(localStorage.getItem('usuarioLogado') || 'null')
-const favoritosSalvos = JSON.parse(localStorage.getItem('favoritos') || '{}')
 
-// busca os produtos na API
+const usuarioLogado = JSON.parse(
+  localStorage.getItem('usuarioLogado') || 'null'
+)
+
+const favoritosSalvos = JSON.parse(
+  localStorage.getItem('favoritos') || '{}'
+)
+
+// buscar os produtos na API
 onMounted(async () => {
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    produtos.value = await resposta.json()
-  } catch (erro) {
-    console.error('Erro ao buscar produtos:', erro)
-  }
+  const resposta = await fetch('http://localhost:3000/produtos')
+  produtos.value = await resposta.json()
 })
 
-// filtra os produtos favoritados pelo usuário
+// filtrar os produtos favoritados pelo usuário
 const favoritos = computed(() => {
   if (!usuarioLogado) {
     return []
@@ -28,10 +29,6 @@ const favoritos = computed(() => {
   return produtos.value.filter((produto) =>
     idsFavoritos.some((id) => String(id) === String(produto.id))
   )
-})
-
-onMounted(() => {
-  carregarFavoritos()
 })
 </script>
 

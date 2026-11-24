@@ -6,29 +6,26 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 const produtos = ref([])
 
-// busca os produtos na API
-onMounted(async () => {
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos')
-    produtos.value = await resposta.json()
-  } catch (erro) {
-    console.error('Erro ao buscar produtos:', erro)
-  }
-})
+// buscar os produtos na API
+async function carregarProdutos() {
+  const resposta = await fetch('http://localhost:3000/produtos')
+  produtos.value = await resposta.json()
+}
 
+onMounted(carregarProdutos)
+
+// filtrar os produtos pela pesquisa
 const produtosFiltrados = computed(() => {
   const busca = route.query.busca?.toLowerCase() || ''
 
-  if (!busca) {
-    return produtos.value
-  }
+  if (!busca) return produtos.value
 
   return produtos.value.filter(
     (produto) =>
       produto.titulo.toLowerCase().includes(busca) ||
       produto.categoria.toLowerCase().includes(busca) ||
       produto.condicao.toLowerCase().includes(busca) ||
-      produto.tamanho.toLowerCase().includes(busca),
+      produto.tamanho.toLowerCase().includes(busca)
   )
 })
 </script>

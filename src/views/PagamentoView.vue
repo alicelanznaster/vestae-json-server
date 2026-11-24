@@ -82,7 +82,10 @@ async function confirmarPagamento() {
   const pedido = {
     usuarioEmail: usuario.email,
     usuarioNome: usuario.nome,
-    produtos: produtosSelecionados.value,
+    produtos: produtosSelecionados.value.map((produto) => ({
+      ...produto,
+      email: produto.email,
+    })),
     endereco: {
       cep: cep.value,
       rua: rua.value,

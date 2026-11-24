@@ -1,79 +1,92 @@
 <script setup>
-import { RouterLink } from 'vue-router';
+import { RouterLink } from 'vue-router'
+import { verificarModoVendedor } from '@/utils/modoUtils'
+import { onMounted, onUnmounted, ref } from 'vue'
+
+const mostrarLink = ref(false)
+
+function carregarModo() {
+  mostrarLink.value = verificarModoVendedor()
+}
+
+onMounted(() => {
+  carregarModo()
+  window.addEventListener('modoAlterado', carregarModo)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('modoAlterado', carregarModo)
+})
 </script>
 
 <template>
-    <footer>
-        <div class="conteudo">
-            <div class="marca">
-                <h1>
-                    VESTÆ
-                </h1>
-                <p>
-                    Vista histórias, compartilhe estilos
-                </p>
-            </div>
-            
-              <div class="rotas">
-                <h2>
-                    Explorar
-                </h2>
-                <ul>
-                    <li><RouterLink to="/">Home</RouterLink></li>
-                    <li><RouterLink to="/calcados">Calçados</RouterLink></li>
-                    <li><RouterLink to="/masculino">Masculino</RouterLink></li>
-                    <li><RouterLink to="/feminino">Feminino</RouterLink></li>
-                    <li><RouterLink to="/acessorios">Acessórios</RouterLink></li>
-                    <li><RouterLink to="/favoritos">Favoritos</RouterLink></li>
-                    <li><RouterLink to="/anunciar">Quero Vender</RouterLink></li>
-                    <li><RouterLink to="/perfil">Meu Perfil</RouterLink></li>
-                    <li><RouterLink to="/sobre">Sobre Nós</RouterLink></li>
-                </ul>
-            </div>
-                <div class="contato">
-                    <h2>Contatos</h2>
-                        <a href="https://wa.me/5547996259734" target="_blank">
-                        <img src="/icons/whatsapp.svg" alt="WhatsApp">
-                        <span>+55 (47) 99625-9734</span>
-                        </a>
+  <footer>
+    <div class="conteudo">
+      <div class="marca">
+        <h1>VESTÆ</h1>
+        <p>Vista histórias, compartilhe estilos</p>
+      </div>
 
-                        <a href="mailto:vestae.desapego@gmail.com">
-                        <img src="/icons/mail.svg" alt="E-mail">
-                        <span>vestae.desapego@gmail.com</span>
-                        </a>
-                        
-                        <div class="icones">
-                            <a href="https://www.instagram.com/vestae.desapego/?utm_source=ig_web_button_share_sheet"><img src="/icons/instagram.svg" alt="Instagram"></a>
-                            <a href="#"><img src="/icons/x.svg" alt="Facebook"></a>
-                        </div>
-                </div>
-            </div>
-            
-        <div class="direitos">
-            <p>
-                © 2026 VESTÆ. Todos os direitos reservados.
-                Este site foi desenvolvido exclusivamente para fins educacionais
-            </p>
+      <div class="rotas">
+        <h2>Explorar</h2>
+        <ul>
+          <li><RouterLink to="/">Home</RouterLink></li>
+          <li><RouterLink to="/calcados">Calçados</RouterLink></li>
+          <li><RouterLink to="/masculino">Masculino</RouterLink></li>
+          <li><RouterLink to="/feminino">Feminino</RouterLink></li>
+          <li><RouterLink to="/acessorios">Acessórios</RouterLink></li>
+          <li><RouterLink to="/favoritos">Favoritos</RouterLink></li>
+          <li><RouterLink v-if="mostrarLink" to="/anunciar">Quero Vender</RouterLink></li>
+          <li><RouterLink to="/perfil">Meu Perfil</RouterLink></li>
+          <li><RouterLink to="/sobre">Sobre Nós</RouterLink></li>
+        </ul>
+      </div>
+      <div class="contato">
+        <h2>Contatos</h2>
+        <a href="https://wa.me/5547996259734" target="_blank">
+          <img src="/icons/whatsapp.svg" alt="WhatsApp" />
+          <span>+55 (47) 99625-9734</span>
+        </a>
+
+        <a href="mailto:vestae.desapego@gmail.com">
+          <img src="/icons/mail.svg" alt="E-mail" />
+          <span>vestae.desapego@gmail.com</span>
+        </a>
+
+        <div class="icones">
+          <a href="https://www.instagram.com/vestae.desapego/?utm_source=ig_web_button_share_sheet"
+            ><img src="/icons/instagram.svg" alt="Instagram"
+          /></a>
+          <a href="#"><img src="/icons/x.svg" alt="Facebook" /></a>
         </div>
-    </footer>
+      </div>
+    </div>
+
+    <div class="direitos">
+      <p>
+        © 2026 VESTÆ. Todos os direitos reservados. Este site foi desenvolvido exclusivamente para
+        fins educacionais
+      </p>
+    </div>
+  </footer>
 </template>
 
 <style scoped>
-footer{
-  background-color: #C00B63;
+footer {
+  background-color: #c00b63;
   color: white;
   padding: 30px 35px;
   padding-bottom: 15px;
 }
 
-.conteudo{
+.conteudo {
   display: flex;
   justify-content: space-between;
   gap: 120px;
   align-items: flex-start;
 }
 
-.marca{
+.marca {
   margin-top: 100px;
 }
 
@@ -85,7 +98,7 @@ footer{
   font-size: 1.1rem;
 }
 
-.rotas h2{
+.rotas h2 {
   margin-bottom: 18px;
 }
 
@@ -104,7 +117,7 @@ footer{
 
 .rotas a:hover {
   text-decoration: underline;
-} 
+}
 
 .contato {
   display: flex;
@@ -153,7 +166,7 @@ footer{
   text-align: center;
 }
 
-.direitos p{
+.direitos p {
   font-size: 15px;
 }
 
@@ -164,28 +177,28 @@ footer{
     padding: 0;
   }
 
-  .resposivo{
+  .resposivo {
     display: flex;
     gap: 80px;
   }
-  .marca{
+  .marca {
     margin-top: 8px;
   }
 
-  .marca h1{
+  .marca h1 {
     font-size: 1.75rem;
   }
 
-  .marca p{
+  .marca p {
     font-size: 1rem;
   }
 
-  .rotas h2{
+  .rotas h2 {
     font-size: 21px;
     margin-bottom: 8px;
   }
 
-  .rotas li{
+  .rotas li {
     margin-bottom: 5px;
   }
 
@@ -194,20 +207,20 @@ footer{
     margin-bottom: 8px;
   }
 
-  .contato img{
+  .contato img {
     width: 24px;
     height: 24px;
   }
 
-  .direitos p{
+  .direitos p {
     font-size: 12px;
   }
 
-  .icones{
+  .icones {
     margin-top: 0;
   }
 
-  .icones img{
+  .icones img {
     width: 35px;
     height: 35px;
   }
@@ -217,8 +230,8 @@ footer{
     padding-top: 10px;
     line-height: 1.5;
   }
-  
-  .direitos p{
+
+  .direitos p {
     font-size: 12px;
   }
 }

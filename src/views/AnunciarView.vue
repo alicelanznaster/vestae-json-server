@@ -10,10 +10,12 @@ const anuncioTemporario = JSON.parse(localStorage.getItem('anuncioTemporario') |
 const imagem = ref(anuncioTemporario ? { preview: anuncioTemporario.imagem } : null)
 const publicado = ref(false)
 
+// salvar a imagem selecionada
 const salvarImagem = (dados) => {
   imagem.value = dados
 }
 
+// publicar o anúncio
 const publicar = async (produto) => {
   publicado.value = false
 
@@ -42,29 +44,25 @@ const publicar = async (produto) => {
     email: usuarioLogado.email,
   }
 
-  try {
-    const resposta = await fetch('http://localhost:3000/produtos', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(novoAnuncio),
-    })
+  const resposta = await fetch('http://localhost:3000/produtos', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(novoAnuncio),
+  })
 
-    if (!resposta.ok) {
-      throw new Error('Erro ao publicar anúncio.')
-    }
-
-    localStorage.removeItem('anuncioTemporario')
-
-    alert('Anúncio publicado! Agradecemos a preferência!')
-
-    publicado.value = true
-    imagem.value = null
-  } catch (erro) {
-    console.error('Erro ao publicar anúncio:', erro)
+  if (!resposta.ok) {
     alert('Não foi possível publicar o anúncio. Tente novamente.')
+    return
   }
+
+  localStorage.removeItem('anuncioTemporario')
+
+  alert('Anúncio publicado! Agradecemos a preferência!')
+
+  publicado.value = true
+  imagem.value = null
 }
 </script>
 
