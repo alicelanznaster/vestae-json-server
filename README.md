@@ -5,7 +5,7 @@
 
 ## Links de Acesso
 
-* **Vercel:** [https://hackathon-vestae.vercel.app/](https://hackathon-vestae.vercel.app/)
+* **Vercel:** [https://vestae-asf.vercel.app/](https://hackathon-vestae.vercel.app/)
 * **Surge:** [https://vestae.surge.sh/](https://vestae.surge.sh/)
 
 ---
@@ -140,12 +140,40 @@ O projeto, no geral, foi dividido de uma forma colaborativa. As atividades foram
 | **Alice** | Sacola (`CartItem`, `CartSummary`, `CartPanel`), ProdutoDetail, Login, Cadastro, Pagamento e Footer. |
 | **Flavia** | Produtos (`ProductCard`, `ProductList`), Favoritos, Categorias (Masculino, Feminino, Acessórios, Calçados), Header e Perfil. |
 | **Sofia** | Product.js, Home (`HomeView`, `AvaliacaoSection`, `BannerSection`, `CategoriasSection`, `DestaquesSection`, `StarRating`), Anunciar e Avaliações. |
-| **Otávio** | Não desenvolveu funcionalidades no projeto. |
 
 ---
 
-##  Avaliação do grupo
+## Como executar o projeto
+### Aplicação
 
-**Nota: 8.5 / 10**
+Para executar a aplicação, clone o repositório e instale as dependências:
 
-> **Justificativa:** O grupo conseguiu desenvolver uma versão funcional do VESTÆ, com as funcionalidades previstas. O projeto conta com identidade visual consistente e boa experiência de usuário. A nota poderia ser maior em atualizações futuras, como a integração de backend e banco de dados. Em suma, consideramos que fizemos um bom trabalho diante das circunstâncias.
+```bash
+git clone https://github.com/alicelanznaster/vestae-json-server.git
+cd vestae
+npm install
+npm run dev
+```
+
+Caso o projeto já esteja clonado no computador, atualize os arquivos com `git pull` antes de executar.
+
+### API
+
+Em outro terminal, dentro da pasta do projeto, execute:
+
+```bash
+npm run api
+```
+
+### Versão do JSON Server
+
+O projeto utiliza a versão `json-server@1.0.0-beta.15`.
+
+### Divisão dos CRUDs
+
+Cada integrante ficou responsável pelo desenvolvimento completo do CRUD de uma entidade do sistema, incluindo as operações de cadastro, consulta, atualização e exclusão.
+
+- **Alice:** CRUD de usuários.
+- **Sofia:** CRUD de produtos.
+- **Flavia:** CRUD de pedidos.
+
